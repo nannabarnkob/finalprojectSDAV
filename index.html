@@ -1,0 +1,87 @@
+<html lang="en">
+	<head>
+    <meta charset="utf-8">
+    <title>Assignment 2: Social Data Analysis and Visualization</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+  </head>
+  <body>
+    <div id="viz"> </div>
+    <script type="text/javascript">
+    // width and height for map of visualization
+    var wMap = 800;
+    var hMap = 500;
+    // define padding
+    var paddingMap = 20;
+    //Define map projection
+    var projection = d3.geoMercator()
+                 .center([-74.22, 40.855])
+                 .translate([wMap/2, hMap/2])
+                 .scale([70000]);
+    //Define path generator
+    var path = d3.geoPath()
+             .projection(projection);
+
+    var color = ['#64848E', '#DADED6', '#B6A693', '#9A9AA1', '#85818D']
+
+    //Create SVG element
+    var svgMap = d3.select("#viz")
+       			.append("svg")
+  					.attr("width", wMap)
+       		  .attr("height", hMap);
+
+    var center = projection([0, 0]);
+
+    // define zoom function(add scaleExtent if necessary)
+    var zoom = d3.zoom()
+           .translateExtent([[ -300, -200 ], [ 300, 200 ]])
+           .on("zoom", zooming);
+
+    var zooming = function(d) {
+     				//Log out d3.event.transform, so you can see all the goodies inside
+     				console.log(d3.event.transform);
+     				//New offset array
+     				var offset = [d3.event.transform.x, d3.event.transform.y];
+     				//Calculate new scale
+     				var newScale = d3.event.transform.k * 5000;
+     				//Update projection with new offset and scale
+     				projection.translate(offset)
+     						  .scale(newScale);
+
+     				//Update all paths and circles
+     				svgMap.selectAll("path")
+     					.attr("d", path);
+    };
+
+    //Create a container in which all zoom-able elements will live
+    var map = svgMap.append("g")
+          .attr("id", "map")
+          .call(zoom)  //Bind the zoom behavior
+          .call(zoom.transform, d3.zoomIdentity  //Then apply the initial transform
+            .translate(wMap/2, hMap/2)
+            .scale(1000)
+            .translate(-center[0], -center[1]));
+
+    //Create a new, invisible background rect to catch zoom events
+    map.append("rect")
+          	.attr("x", 0)
+    				.attr("y", 0)
+            .attr("width", wMap)
+    				.attr("height", hMap)
+            .attr("opacity", 0);
+
+    d3.json("data.geojson", function(json) {
+              console.log(json);
+
+      map.selectAll("path")
+             .data(json.features)
+             .enter()
+             .append("path")
+             .attr("d", path)
+             .attr("fill", function(d, i) {
+              return color[i];
+              });
+            });
+
+    </script>
+  </body>
+</html>
