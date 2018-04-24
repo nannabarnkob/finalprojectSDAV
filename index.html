@@ -6,6 +6,14 @@
   </head>
   <body>
     <div id="viz"> </div>
+
+		<p class ="statistic" id = "2008" > To tusind og otte </p>
+		<p class ="statistic" id = "2009" > 2009 </p>
+		<p class ="statistic" id = "2010" > 2010 </p>
+		<p class ="statistic" id = "2011" > 2011 </p>
+		<p class ="statistic" id = "2012" > 2012 </p>
+		<p class ="statistic" id = "2013" > 2013 </p>
+		<p class ="statistic" id = "2014" > 2014 </p>
     <script type="text/javascript">
     // width and height for map of visualization
     var wMap = 800;
@@ -13,13 +21,13 @@
     // define padding
     var paddingMap = 20;
     //Define map projection
-    var projection = d3.geoMercator()
-                 .center([-74.22, 40.855])
+
+	  var projection = d3.geoMercator()
                  .translate([wMap/2, hMap/2])
-                 .scale([70000]);
+                 .scale((1<<22)/2/Math.PI);
     //Define path generator
     var path = d3.geoPath()
-             .projection(projection);
+								 .projection(projection)
 
     var color = ['#64848E', '#DADED6', '#B6A693', '#9A9AA1', '#85818D']
 
@@ -29,10 +37,9 @@
   					.attr("width", wMap)
        		  .attr("height", hMap);
 
-    var center = projection([0, 0]);
-
     // define zoom function(add scaleExtent if necessary)
-    var zoom = d3.zoom()
+/*
+	  var zoom = d3.zoom()
            .translateExtent([[ -300, -200 ], [ 300, 200 ]])
            .on("zoom", zooming);
 
@@ -51,15 +58,16 @@
      				svgMap.selectAll("path")
      					.attr("d", path);
     };
+*/
 
-    //Create a container in which all zoom-able elements will live
-    var map = svgMap.append("g")
-          .attr("id", "map")
-          .call(zoom)  //Bind the zoom behavior
-          .call(zoom.transform, d3.zoomIdentity  //Then apply the initial transform
-            .translate(wMap/2, hMap/2)
-            .scale(1000)
-            .translate(-center[0], -center[1]));
+//Create a container in which all zoom-able elements will live
+	  var map = svgMap.append("g")
+	        .attr("id", "map");
+//	        .call(zoom)  //Bind the zoom behavior
+//	        .call(zoom.transform, d3.zoomIdentity  //Then apply the initial transform
+//	          .translate(wMap/2, hMap/2)
+//	          .scale(1000)
+//	          .translate(-center[0], -center[1]));
 
     //Create a new, invisible background rect to catch zoom events
     map.append("rect")
@@ -69,17 +77,84 @@
     				.attr("height", hMap)
             .attr("opacity", 0);
 
-    d3.json("data.geojson", function(json) {
+    d3.json("socio_data_kbh.geojson", function(json) {
               console.log(json);
 
-      map.selectAll("path")
+			var projection = d3.geoMercator().fitSize([wMap, hMap], json);
+			var path = d3.geoPath().projection(projection);
+
+			map.selectAll('path')
+				.data(json.features)
+				.enter()
+				.append('path')
+				.attr('d', path)
+				.style("fill","white")
+				.style("stroke-width", "1")
+				.style("stroke", "black");
+
+			d3.csv("Sorted_data.csv",function(data) {
+				var nest = d3.nest()
+				 .key(function(d){
+					 return d.aar
+				 })
+				 .entries(data)
+
+				d3.selectAll('p')
+				.on("click",function(){
+					var paragraphID =d3.select(this).attr("id");
+					if (paragraphID == "2008"){
+						var data = data(nest)//Do some craaazy stuff to data of 2008
+					}
+				});
+
+			map.selectAll('path')
+				 .data(data)
+				 .style("fill", function(d){
+					 return "rgb(50,0," + 208 + ")";
+				 });
+
+
+
+			})
+
+
+/*
+			var center = d3.geo.centroid(json)
+      var scale  = 1000;
+      var offset = [wMap/2, hMap/2];
+      var projection = d3.geo.mercator().scale(scale).center(center)
+          .translate(offset);
+
+      var path = d3.geo.path().projection(projection);
+
+			var bounds  = path.bounds(json);
+      var hscale  = scale*wMap  / (bounds[1][0] - bounds[0][0]);
+      var vscale  = scale*hMap / (bounds[1][1] - bounds[0][1]);
+      var scale   = (hscale < vscale) ? hscale : vscale;
+      var offset  = [wMap - (bounds[0][0] + bounds[1][0])/2,
+                        hMap - (bounds[0][1] + bounds[1][1])/2];
+
+			projection = d3.geo.mercator().center(center)
+        .scale(scale).translate(offset);
+      path = path.projection(projection);
+
+
+			vis.append("rect").attr('width', width).attr('height', height)
+				 .style('stroke', 'black').style('fill', 'none');
+
+			vis.selectAll("path").data(json.features).enter().append("path")
+					.attr("d", path)
+					.style("fill", "red")
+					.style("stroke-width", "1")
+					.style("stroke", "black")
+/*
+			map.selectAll("path")
              .data(json.features)
              .enter()
              .append("path")
              .attr("d", path)
-             .attr("fill", function(d, i) {
-              return color[i];
-              });
+             .style("fill","black");
+*/
             });
     </script>
   </body>
