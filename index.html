@@ -95,22 +95,19 @@
 			d3.csv("Sorted_data.csv",function(data) {
 				var nest = d3.nest()
 				 .key(function(d){
+					 return d.rode_nr
+				 })
+				 .key(function(d){
 					 return d.aar
 				 })
 				 .entries(data)
 
-				d3.selectAll('p')
-				.on("click",function(){
-					var paragraphID =d3.select(this).attr("id");
-					if (paragraphID == "2008"){
-						var data = data(nest)//Do some craaazy stuff to data of 2008
-					}
-				});
+
 
 			map.selectAll('path')
-				 .data(data)
+				 .data(nest)
 				 .style("fill", function(d){
-					 return "rgb(50,0," + 208 + ")";
+					 return "rgb(50,0," + d.value + ")";
 				 });
 
 
