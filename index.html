@@ -3,9 +3,12 @@
     <meta charset="utf-8">
     <title>Final project: Social Data Analysis and Visualization</title>
     <script src="https://d3js.org/d3.v4.min.js"></script>
+		<link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <div id="viz"> </div>
+		<div class="section">
+    <div class="map"> </div>
+		<div class="hist"> </div>
 
 		<p class ="statistic" id = "2008" > To tusind og otte </p>
 		<p class ="statistic" id = "2009" > 2009 </p>
@@ -18,8 +21,12 @@
     // width and height for map of visualization
     var wMap = 800;
     var hMap = 500;
+		var wHist = 800;
+		var hHist = 200;
+
     // define padding
     var paddingMap = 20;
+		var paddingHist = 10;
 
 		// Define key function
 		var key = function(d){
@@ -37,7 +44,7 @@
     var color = ['#64848E', '#DADED6', '#B6A693', '#9A9AA1', '#85818D']
 
     //Create SVG element
-    var svgMap = d3.select("#viz")
+    var svgMap = d3.select("div.map")
        			.append("svg")
   					.attr("width", wMap)
        		  .attr("height", hMap);
@@ -83,63 +90,102 @@
             .attr("opacity", 0);
 
     d3.json("socio_data_kbh.geojson", function(json) {
-              //console.log(json);
 
 			var projection = d3.geoMercator().fitSize([wMap, hMap], json);
 			var path = d3.geoPath().projection(projection);
 
+			// Make arrays for the different years
+			var aar2008 = [];
+			var aar2009 = [];
+			var aar2010 = [];
+			var aar2011 = [];
+			var aar2012 = [];
+			var aar2013 = [];
+			var aar2014 = [];
 
 			d3.csv("Sorted_data.csv",function(data) {
-<<<<<<< HEAD
-				dataset = data;
-
+				//dataset = data;
+				data.forEach(d => {
+					if (+d.aar == 2008) {
+						aar2008.push(d);
+					}
+					else if (+d.aar == 2009) {
+						aar2009.push(d);
+					}
+					else if (+d.aar == 2010) {
+						aar2010.push(d);
+					}
+					else if (+d.aar == 2011) {
+						aar2011.push(d);
+					}
+					else if (+d.aar == 2012) {
+						aar2012.push(d);
+					}
+					else if (+d.aar == 2013) {
+						aar2013.push(d);
+					}
+					else if (+d.aar == 2014) {
+						aar2014.push(d);
+					}
+				})
 
 			// When clicked update with new data sets
 	     d3.selectAll("p")
 	     	.on("click", function() {
 	      	var paragraphID = d3.select(this).attr("id");
+
+					// When 2009 is clicked
 	         if (paragraphID == "2009") {
 
+						 // Load in data for the histogram
+						 d3.csv("Aggregated_data.csv", function(d) {
+							 dataset = data;
 
-							map.selectAll('path')
-			 				 .data(dataset, key)
-			 				 .style("fill", function(d){
-			 					 return "rgb(50,0," + d.antal_hoj_indkomsta + ")";
-			 				 });
-						 }});
-=======
+						 // Set up the scales
+ 			      var xScaleHist = d3.scaleBand()
+ 			        .domain(d3.range(dataset))
+ 			        .range([0, wHist])
+ 			        .paddingInner(0.05);
+ 			      var yScaleHist = d3.scaleLinear()
+ 			        .domain([0, d3.max(dataset, function(d) {
+ 			          return d.alder_antal_0_5;
+ 			        })])
+ 			        .range([hHist, 0]);
 
-				var nest = d3.nest()
-				 .key(function(d){
-					 return d.rode_nr
-				 })
-				 .rollup(function(leaves){
-					 return d3.mean(leaves,function(d){
-						 return d.pct_middel_indkomst})
-				 })
-				 .entries(data)
->>>>>>> b4dd269c0a72260403cf8cc7ccda583c3e830934
+							// Define x axis
+							var xAxisHist = d3.axisBottom()
+										.scale(xScaleHist);
+							// Define y axis
+							var yAxisHist = d3.axisLeft()
+										.scale(yScaleHist);
 
+						// Set up the svg for the histogram
+ 			      var svgHist = d3.select("div.hist")
+							.append("svg")
+							.attr("width", wHist + paddingHist)
+							.attr("height", hHist + paddingHist);
 
- 				var jsonsort = d3.nest()
- 				 .key(function(d){
- 					 return d.rode_nr
- 				 })
- 				 .entries(json.features)
+							// Make the histogram
+							svgHist.append("g")
+									.selectAll("rect")
+									.data(aar2009)
+									.enter()
+									.append("rect")
+									.attr("x", function(d, i) {
+										return xScaleHist(i + 1) + paddingHist;
+									})
+									.attr("y", function(d) {
+										return yScaleHist(d.alder_antal_0_5) + paddingHist * 2;
+									})
+									.attr("width", xScaleHist.bandwidth())
+									.attr("height", function(d, i) {
+										return hHist - yScaleHist(d.alder_antal_0_5);
+									})
+									.attr("fill", function(d) {
+										return "rgb(10, " + Math.round(70 + d.alder_antal_0_5 * 4) + "," + Math.round(70 + d.alder_antal_0_5 * 4) + ")";
+									});
+					});
 
-
-console.log(jsonsort)
-		 for (var j = 0; j < jsonsort.length; j++)  {
-
-				var dataMeanHojIndkomst = nest[j].value
-		 		// Copy the data value into the JSON
-		 		json.features[j].properties.value = dataMeanHojIndkomst;
-
-		 		// Stop looking through the JSON
-		 	}
-
-<<<<<<< HEAD
-=======
 			map.selectAll('path')
 				.data(json.features)
 				.enter()
@@ -150,11 +196,13 @@ console.log(jsonsort)
 				.style("fill", function(d){
 					return( "rgb(50,0,"+ d.properties.value +")");
 				});
->>>>>>> b4dd269c0a72260403cf8cc7ccda583c3e830934
+			};
+		});
 
 
 
 			});
+		});
 
 
 /*
@@ -186,15 +234,15 @@ console.log(jsonsort)
 					.style("fill", "red")
 					.style("stroke-width", "1")
 					.style("stroke", "black")
-/*
-			map.selectAll("path")
+*/
+			/*map.selectAll("path")
              .data(json.features)
              .enter()
              .append("path")
              .attr("d", path)
              .style("fill","black");
-*/
-            });
+
+					 });*/
     </script>
   </body>
 </html>
