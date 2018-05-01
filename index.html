@@ -88,16 +88,9 @@
 			var projection = d3.geoMercator().fitSize([wMap, hMap], json);
 			var path = d3.geoPath().projection(projection);
 
-			map.selectAll('path')
-				.data(json.features)
-				.enter()
-				.append('path')
-				.attr('d', path)
-				.style("fill","white")
-				.style("stroke-width", "1")
-				.style("stroke", "black");
 
 			d3.csv("Sorted_data.csv",function(data) {
+<<<<<<< HEAD
 				dataset = data;
 
 
@@ -114,9 +107,50 @@
 			 					 return "rgb(50,0," + d.antal_hoj_indkomsta + ")";
 			 				 });
 						 }});
+=======
+
+				var nest = d3.nest()
+				 .key(function(d){
+					 return d.rode_nr
+				 })
+				 .rollup(function(leaves){
+					 return d3.mean(leaves,function(d){
+						 return d.pct_middel_indkomst})
+				 })
+				 .entries(data)
+>>>>>>> b4dd269c0a72260403cf8cc7ccda583c3e830934
 
 
+ 				var jsonsort = d3.nest()
+ 				 .key(function(d){
+ 					 return d.rode_nr
+ 				 })
+ 				 .entries(json.features)
 
+
+console.log(jsonsort)
+		 for (var j = 0; j < jsonsort.length; j++)  {
+
+				var dataMeanHojIndkomst = nest[j].value
+		 		// Copy the data value into the JSON
+		 		json.features[j].properties.value = dataMeanHojIndkomst;
+
+		 		// Stop looking through the JSON
+		 	}
+
+<<<<<<< HEAD
+=======
+			map.selectAll('path')
+				.data(json.features)
+				.enter()
+				.append('path')
+				.attr('d', path)
+				.style("stroke-width", "1")
+				.style("stroke", "black")
+				.style("fill", function(d){
+					return( "rgb(50,0,"+ d.properties.value +")");
+				});
+>>>>>>> b4dd269c0a72260403cf8cc7ccda583c3e830934
 
 
 
