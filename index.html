@@ -20,8 +20,13 @@
     var hMap = 500;
     // define padding
     var paddingMap = 20;
-    //Define map projection
 
+		// Define key function
+		var key = function(d){
+			return d.key;
+		};
+
+		//Define map projection
 	  var projection = d3.geoMercator()
                  .translate([wMap/2, hMap/2])
                  .scale((1<<22)/2/Math.PI);
@@ -78,7 +83,7 @@
             .attr("opacity", 0);
 
     d3.json("socio_data_kbh.geojson", function(json) {
-              console.log(json);
+              //console.log(json);
 
 			var projection = d3.geoMercator().fitSize([wMap, hMap], json);
 			var path = d3.geoPath().projection(projection);
@@ -93,26 +98,29 @@
 				.style("stroke", "black");
 
 			d3.csv("Sorted_data.csv",function(data) {
-				var nest = d3.nest()
-				 .key(function(d){
-					 return d.rode_nr
-				 })
-				 .key(function(d){
-					 return d.aar
-				 })
-				 .entries(data)
+				dataset = data;
+
+
+			// When clicked update with new data sets
+	     d3.selectAll("p")
+	     	.on("click", function() {
+	      	var paragraphID = d3.select(this).attr("id");
+	         if (paragraphID == "2009") {
+
+
+							map.selectAll('path')
+			 				 .data(dataset, key)
+			 				 .style("fill", function(d){
+			 					 return "rgb(50,0," + d.antal_hoj_indkomsta + ")";
+			 				 });
+						 }});
 
 
 
-			map.selectAll('path')
-				 .data(nest)
-				 .style("fill", function(d){
-					 return "rgb(50,0," + d.value + ")";
-				 });
 
 
 
-			})
+			});
 
 
 /*
