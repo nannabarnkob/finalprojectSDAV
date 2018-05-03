@@ -8,6 +8,14 @@
 	<style>
 			.axis text {
 		  font: 10px sans-serif;
+		}
+
+			.area {
+				stroke: none;
+			}
+			.area:hover {
+				fill: yellow;
+			}
 	}
 	</style>
   <body>
@@ -134,8 +142,11 @@
 				.style("stroke-width", "1")
 				.style("stroke", "black")
 				.style("fill", function(d){
-					return( "rgb(50,0,"+ d.properties.value +")");
+					var prevalent_area = d3.max([d.properties.pct_hoj_indkomst, d.properties.pct_mellem_indkomst, d.properties.pct_lav_indkomst])
+
+					return( "rgb(50,150,"+ 50*d.properties.pct_hoj_indkomst +")");
 				});
+				console.log(json.features[0].properties.pct_hoj_indkomst)
 
 			d3.csv("Sorted_data.csv",function(data) {
 				//dataset = data;
@@ -162,6 +173,8 @@
 						aar2014.push(d);
 					}
 				})
+
+
 			// for showing something when loading the page:
 			var paragraphID = "2014"
 
@@ -183,22 +196,28 @@
 					console.log("This is the year observation array:")
 					console.log(year_observation);
 					console.log(d3.range(year_observation.length))
+					console.log("max:")
+					console.log(d3.max(d3.values(year_observation)))
 
 			// Set up everything for the first plot
 			var xScaleHist = d3.scaleBand()
-					 			        .domain(d3.range(year_observation.length))
+					 			        .domain(d3.range(year_observation.length+1))
 					 			        .range([0, wHist + paddingHist])
 					 			        .paddingInner(0.05);
 
 			var yScaleHist = d3.scaleLinear()
 					 			        .domain([0, d3.max(d3.values(year_observation))])
-					 			        .range([hHist + paddingHist * 2, 0]);
+					 			        .range([hHist, 0]);
 
+			var xLabelHist = d3.scaleBand()
+												.domain(["", "Age 0-5","Age 6-17","Age 18-29","Age 30-39","Age 40-49","Age 50-64"])
+												.range([0,wHist])
+												.paddingInner(0.05);
 												// Define x axis
 			var xAxisHist = d3.axisBottom()
 										//		.domain(["0-5","6-17","18-29","30-39","40-49","50-64","above 65"])
-												.scale(xScaleHist)
-												.tickFormat(["Age0-5","6-17","18-29","30-39","40-49","50-64","above 65"]);
+												.scale(xLabelHist);
+												//.tickFormat(["Age0-5","6-17","18-29","30-39","40-49","50-64","above 65"]);
 												//.tickValues()
 
 
@@ -206,13 +225,14 @@
 		  var yAxisHist = d3.axisLeft()
 												.scale(yScaleHist);
 
+			// create bars
 			svgHist.append("g")
 							.selectAll("rect")
 							.data(year_observation)
 							.enter()
 							.append("rect")
 							.attr("x", function(d, i) {
-							return xScaleHist(i) + (paddingHist * 2);
+							return xScaleHist(i + 1 ) + (paddingHist);
 							})
 							.attr("y", function(d) {
 							return yScaleHist(d) - paddingHist;
@@ -226,21 +246,20 @@
 							});
 
 					// Make y axis
-					svgHist.append("g")
+			svgHist.append("g")
 						.attr("class","y axis")
-						.attr("transform","translate(" + (paddingHist * 2) + ",0)")
+						.attr("transform","translate(" + (paddingHist * 2) + "," + (paddingHist * 2) + ")")
 						.call(yAxisHist);
 
 			// Make x axis
-					svgHist.append("g")
+			svgHist.append("g")
 						.attr("class","x axis")
-						.attr("transform","translate(0," + (hHist - paddingHist) + ")")
-						.call(xAxisHist)
-						.selectAll("text")
-						.attr("y", 0)
-						.attr("x", 9)
-						.attr("transform", "rotate(90)")
-						.style("text-anchor", "start");
+						.attr("transform","translate(" + (paddingHist * 2) + "," + (hHist - paddingHist) + ")")
+						.call(xAxisHist);
+						//.selectAll("text")
+						//.attr("y", 0)
+						//.attr("x", 9)
+						//.style("text-anchor", "start");
 
 
 				});
@@ -276,12 +295,18 @@
  			        .domain([0, d3.max(d3.values(year_observation))])
  			        .range([hHist, 0]);
 
+						var xLabelHist = d3.scaleBand()
+							.domain(["age0_5","age6_17","age18_29","age30_39","age40_49","age50_64"])
+							.range([0,wHist])
+							.paddingInner(0.05);
 							// Define x axis
 						var xAxisHist = d3.axisBottom()
-							.scale(xScaleHist);
+							.scale(xLabelHist)
+							.ticks(7);
 							// Define y axis
 							var yAxisHist = d3.axisLeft()
 							.scale(yScaleHist);
+
 
 /*
 						var columns = ["age0_5","age6_17","age18_29","age30_39","age40_49","age50_64"]
@@ -320,14 +345,13 @@
 			var stack = d3.stack()
 				.order(d3.stackOrderDescending);	// flipped stack order
 
-			d3.csv("rode_nr1_test.csv", function(data) {
+			d3.csv("Aggregated_data_udd.csv", function(data) {
 				console.log(data)
 				education_data = data;
 				var keys = education_data.columns;
 				// remove the first three columns
 				keys.shift();
-				keys.shift();
-				keys.shift();
+				keys.pop();
 				stack.keys(keys);
 
 				var series = stack(education_data);
