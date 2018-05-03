@@ -7,8 +7,7 @@
   </head>
   <body>
 		<div class="section">
-    <div class="map"> </div>
-		<div class="hist"> </div>
+    <div class="viz"> </div>
 
 		<p class ="statistic" id = "2008" > To tusind og otte </p>
 		<p class ="statistic" id = "2009" > 2009 </p>
@@ -26,13 +25,13 @@
 
     // define padding
     var paddingMap = 20;
-		var paddingHist = 10;
+		var paddingHist = 15;
 
 		// Define key function
 		var key = function(d){
 			return d.key;
 		};
-
+/*
 		//Define map projection
 	  var projection = d3.geoMercator()
                  .translate([wMap/2, hMap/2])
@@ -40,15 +39,23 @@
     //Define path generator
     var path = d3.geoPath()
 								 .projection(projection)
-
+*/
     var color = ['#64848E', '#DADED6', '#B6A693', '#9A9AA1', '#85818D']
 
-    //Create SVG element
-    var svgMap = d3.select("div.map")
+		var key = function(d) {
+			return d.key;
+		};
+
+    //Create SVG elements for our visualization
+    var svgMap = d3.select("div.viz")
        			.append("svg")
   					.attr("width", wMap)
        		  .attr("height", hMap);
 
+		var svgHist = d3.select("div.viz")
+						.append("svg")
+						.attr("width", wHist + paddingHist)
+						.attr("height", hHist + paddingHist);
     // define zoom function(add scaleExtent if necessary)
 /*
 	  var zoom = d3.zoom()
@@ -103,6 +110,21 @@
 			var aar2013 = [];
 			var aar2014 = [];
 
+			// array for row with one year observation for creating over all histogram
+			var year_observation = [];
+
+			// draw the map using the json file
+			map.selectAll('path')
+				.data(json.features)
+				.enter()
+				.append('path')
+				.attr('d', path)
+				.style("stroke-width", "1")
+				.style("stroke", "black")
+				.style("fill", function(d){
+					return( "rgb(50,0,"+ d.properties.value +")");
+				});
+
 			d3.csv("Sorted_data.csv",function(data) {
 				//dataset = data;
 				data.forEach(d => {
@@ -128,81 +150,178 @@
 						aar2014.push(d);
 					}
 				})
+			// for showing something when loading the page:
+			var paragraphID = "2014"
+
+			d3.csv("Aggregated_data.csv", function(data) {
+
+				console.log('this is the aggregated data:')
+				console.log(data)
+				data.forEach(function(d) {
+						if (+d.aar == Number(paragraphID)) {
+							year_observation.push(+d["alder_antal_0_5"])
+							year_observation.push(+d["alder_antal_6_17"])
+							year_observation.push(+d["alder_antal_18_29"])
+							year_observation.push(+d["alder_antal_30_39"])
+							year_observation.push(+d["alder_antal_40_49"])
+							year_observation.push(+d["alder_antal_50_64"])
+							year_observation.push(+d["alder_antal_over_65"])
+							/*
+							year_observation["age0_5"] = +d["alder_antal_0_5"];
+							year_observation["age6_17"] = +d["alder_antal_6_17"];
+							year_observation["age18_29"] = +d["alder_antal_18_29"];
+							year_observation["age30_39"] = +d["alder_antal_30_39"];
+							year_observation["age40_49"] = +d["alder_antal_40_49"];
+							year_observation["age50_64"] = +d["alder_antal_50_64"];
+							*/
+						};
+						});
+						console.log("This is the year observation array:")
+						console.log(year_observation);
+						console.log(d3.range(year_observation.length))
+
+			// Set up everything for the first plot
+			var xScaleHist = d3.scaleBand()
+					 			        .domain(d3.range(year_observation.length))
+					 			        .range([paddingHist, wHist])
+					 			        .paddingInner(0.05);
+
+			var yScaleHist = d3.scaleLinear()
+					 			        .domain([0, d3.max(d3.values(year_observation))])
+					 			        .range([hHist, 0]);
+
+												// Define x axis
+			var xAxisHist = d3.axisBottom()
+												.scale(xScaleHist);
+												// Define y axis
+		  var yAxisHist = d3.axisLeft()
+												.scale(yScaleHist);
+
+									/*		var columns = ["age0_5","age6_17","age18_29","age30_39","age40_49","age50_64"]
+												// Make the histogram
+											for(var i=0;i<columns.length;i++) {
+
+
+												var y = columns[i]
+												console.log(y);
+												var histHeightValue = year_observation[y];
+												console.log(histHeightValue);
+*/
+				svgHist.append("g")
+							.selectAll("rect")
+							.data(year_observation)
+							.enter()
+							.append("rect")
+							.attr("x", function(d, i) {
+								console.log(i)
+								console.log(xScaleHist(i))
+							return xScaleHist(i) + paddingHist;
+							})
+							.attr("y", function(d) {
+							return yScaleHist(d) + paddingHist * 2;
+							})
+							.attr("width", xScaleHist.bandwidth())
+							.attr("height", function(d, i) {
+							return hHist - yScaleHist(d);
+							})
+							.attr("fill", function(d) {
+							return "rgb(10, " + Math.round(70 + d * 4) + "," + Math.round(70 + d * 4) + ")";
+							});
+
+
+					svgHist.append("g")
+						.attr("class","axis")
+						.attr("transform","translate(" + paddingHist + ",0)")
+						.call(yAxisHist);
+
+					svgHist.append("g")
+						.attr("class","axis")
+						.attr("transform","translate(0," + (hHist - paddingHist) + ")")
+						.call(xAxisHist);
+
+				});
 
 			// When clicked update with new data sets
 	     d3.selectAll("p")
 	     	.on("click", function() {
 	      	var paragraphID = d3.select(this).attr("id");
 
-					// When 2009 is clicked
-	         if (paragraphID == "2009") {
+					// Load in data for the histogram depending on the paragraphID
+					console.log('this is the aggregated data:')
+					console.log(data)
+					data.forEach(function(d) {
+							if (+d.aar == Number(paragraphID)) {
+								year_observation.push(+d["alder_antal_0_5"])
+								year_observation.push(+d["alder_antal_6_17"])
+								year_observation.push(+d["alder_antal_18_29"])
+								year_observation.push(+d["alder_antal_30_39"])
+								year_observation.push(+d["alder_antal_40_49"])
+								year_observation.push(+d["alder_antal_50_64"])
+								year_observation.push(+d["alder_antal_over_65"])
+								/*
+								year_observation["age0_5"] = +d["alder_antal_0_5"];
+								year_observation["age6_17"] = +d["alder_antal_6_17"];
+								year_observation["age18_29"] = +d["alder_antal_18_29"];
+								year_observation["age30_39"] = +d["alder_antal_30_39"];
+								year_observation["age40_49"] = +d["alder_antal_40_49"];
+								year_observation["age50_64"] = +d["alder_antal_50_64"];
+								*/
+							};
+							});
+							console.log(year_observation);
 
-						 // Load in data for the histogram
-						 d3.csv("Aggregated_data.csv", function(d) {
-							 dataset = data;
 
 						 // Set up the scales
  			      var xScaleHist = d3.scaleBand()
- 			        .domain(d3.range(dataset))
+ 			        .domain(d3.range(year_observation))
  			        .range([0, wHist])
  			        .paddingInner(0.05);
- 			      var yScaleHist = d3.scaleLinear()
- 			        .domain([0, d3.max(dataset, function(d) {
- 			          return d.alder_antal_0_5;
- 			        })])
+
+						var yScaleHist = d3.scaleLinear()
+ 			        .domain([0, d3.max(d3.values(year_observation))])
  			        .range([hHist, 0]);
 
 							// Define x axis
-							var xAxisHist = d3.axisBottom()
-										.scale(xScaleHist);
+						var xAxisHist = d3.axisBottom()
+							.scale(xScaleHist);
 							// Define y axis
 							var yAxisHist = d3.axisLeft()
-										.scale(yScaleHist);
+							.scale(yScaleHist);
 
-						// Set up the svg for the histogram
- 			      var svgHist = d3.select("div.hist")
-							.append("svg")
-							.attr("width", wHist + paddingHist)
-							.attr("height", hHist + paddingHist);
-
+/*
+						var columns = ["age0_5","age6_17","age18_29","age30_39","age40_49","age50_64"]
 							// Make the histogram
+						for(var i=0;i<columns.length;i++) {
+
+							var y = columns[i]
+							console.log(y);
+							var histHeightValue = year_observation[y];
+							console.log(histHeightValue);
+*/
 							svgHist.append("g")
-									.selectAll("rect")
-									.data(aar2009)
-									.enter()
-									.append("rect")
-									.attr("x", function(d, i) {
-										return xScaleHist(i + 1) + paddingHist;
-									})
-									.attr("y", function(d) {
-										return yScaleHist(d.alder_antal_0_5) + paddingHist * 2;
-									})
-									.attr("width", xScaleHist.bandwidth())
-									.attr("height", function(d, i) {
-										return hHist - yScaleHist(d.alder_antal_0_5);
-									})
-									.attr("fill", function(d) {
-										return "rgb(10, " + Math.round(70 + d.alder_antal_0_5 * 4) + "," + Math.round(70 + d.alder_antal_0_5 * 4) + ")";
-									});
+								.selectAll("rect")
+								.data(year_observation)
+								.enter()
+								.append("rect")
+								.attr("x", function(d, i) {
+									return xScaleHist(i + 1) + paddingHist;
+								})
+								.attr("y", function(d) {
+									return yScaleHist(d) + paddingHist * 2;
+								})
+								.attr("width", xScaleHist.bandwidth())
+								.attr("height", function(d, i) {
+									return hHist - yScaleHist(d);
+								})
+								.attr("fill", function(d) {
+									return "rgb(10, " + Math.round(70 + d * 4) + "," + Math.round(70 + d * 4) + ")";
+								});
+							});
+							});
 					});
-
-			map.selectAll('path')
-				.data(json.features)
-				.enter()
-				.append('path')
-				.attr('d', path)
-				.style("stroke-width", "1")
-				.style("stroke", "black")
-				.style("fill", function(d){
-					return( "rgb(50,0,"+ d.properties.value +")");
-				});
-			};
-		});
+		//});
 
 
-
-			});
-		});
 
 
 /*
