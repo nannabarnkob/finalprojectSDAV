@@ -3,9 +3,33 @@
     <meta charset="utf-8">
     <title>Final project: Social Data Analysis and Visualization</title>
     <script src="https://d3js.org/d3.v4.min.js"></script>
+		<style>
+		.zoom rect {
+			fill: black;
+			opacity: 0.2;
+		}
+
+		.zoom text {
+			fill: black;
+			font-size: 18px;
+			text-anchor: middle;
+		}
+
+		.zoom:hover rect,
+		.zoom:hover text {
+			fill: #B6A693;
+			text-decoration-color: black;
+			stroke: black;
+		}
+		</style>
   </head>
   <body>
-    <div id="viz"> </div>
+		<div id="viz">
+		<input name="updateButton"
+					 type="button"
+					 value="Update"
+					 onclick="updateData()" />
+		</div>
 
 		<p class ="statistic" id = "2008" > To tusind og otte </p>
 		<p class ="statistic" id = "2009" > 2009 </p>
@@ -16,6 +40,8 @@
 		<p class ="statistic" id = "2014" > 2014 </p>
     <script type="text/javascript">
     // width and height for map of visualization
+
+
     var wMap = 800;
     var hMap = 500;
     // define padding
@@ -103,17 +129,19 @@
  				 })
  				 .entries(json.features)
 
+	for (var i = 0; i < nest.length;i++){
+		var nr = nest[i].key
+		 for (var j = 0; j < 2763; j++)  {
 
-console.log(jsonsort)
-		 for (var j = 0; j < jsonsort.length; j++)  {
+			 if (nr == json.features[j].properties.rode_nr){
+				 var dataMeanHojIndkomst = nest[i].value
+ 		 		// Copy the data value into the JSON
 
-				var dataMeanHojIndkomst = nest[j].value
-		 		// Copy the data value into the JSON
-		 		json.features[j].properties.value = dataMeanHojIndkomst;
+ 		 		json.features[j].properties.value = dataMeanHojIndkomst;
+			 }
 
-		 		// Stop looking through the JSON
 		 	}
-
+		}
 			map.selectAll('path')
 				.data(json.features)
 				.enter()
