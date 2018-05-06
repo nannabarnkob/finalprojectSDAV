@@ -39,7 +39,7 @@
 		var hArea = 400;
     // define padding
     var paddingMap = 20;
-		var paddingHist = 20;
+		var paddingHist = 30;
 		var paddingArea = 20;
 
 		// Define key function
@@ -201,8 +201,8 @@
 
 			// Set up everything for the first plot
 			var xScaleHist = d3.scaleBand()
-					 			        .domain(d3.range(year_observation.length+1))
-					 			        .range([0, wHist + paddingHist])
+					 			        .domain(d3.range(year_observation.length))
+					 			        .range([paddingHist + 5, wHist])
 					 			        .paddingInner(0.05);
 
 			var yScaleHist = d3.scaleLinear()
@@ -210,15 +210,13 @@
 					 			        .range([hHist, 0]);
 
 			var xLabelHist = d3.scaleBand()
-												.domain(["", "Age 0-5","Age 6-17","Age 18-29","Age 30-39","Age 40-49","Age 50-64"])
-												.range([0,wHist])
+												.domain(["Age 0-5","Age 6-17","Age 18-29","Age 30-39","Age 40-49","Age 50-64", "Above 64"])
+												.range([paddingHist,wHist])
 												.paddingInner(0.05);
 												// Define x axis
 			var xAxisHist = d3.axisBottom()
-										//		.domain(["0-5","6-17","18-29","30-39","40-49","50-64","above 65"])
 												.scale(xLabelHist);
-												//.tickFormat(["Age0-5","6-17","18-29","30-39","40-49","50-64","above 65"]);
-												//.tickValues()
+												
 
 
 												// Define y axis
@@ -232,10 +230,10 @@
 							.enter()
 							.append("rect")
 							.attr("x", function(d, i) {
-							return xScaleHist(i + 1 ) + (paddingHist);
+							return xScaleHist(i);
 							})
 							.attr("y", function(d) {
-							return yScaleHist(d) - paddingHist;
+							return yScaleHist(d);
 							})
 							.attr("width", xScaleHist.bandwidth())
 							.attr("height", function(d, i) {
@@ -248,20 +246,14 @@
 					// Make y axis
 			svgHist.append("g")
 						.attr("class","y axis")
-						.attr("transform","translate(" + (paddingHist * 2) + "," + (paddingHist * 2) + ")")
+						.attr("transform","translate(" + paddingHist + ",0)")
 						.call(yAxisHist);
 
 			// Make x axis
 			svgHist.append("g")
 						.attr("class","x axis")
-						.attr("transform","translate(" + (paddingHist * 2) + "," + (hHist - paddingHist) + ")")
+						.attr("transform","translate(0," + hHist + ")")
 						.call(xAxisHist);
-						//.selectAll("text")
-						//.attr("y", 0)
-						//.attr("x", 9)
-						//.style("text-anchor", "start");
-
-
 				});
 
 			// When clicked update with new data sets
