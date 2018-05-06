@@ -16,6 +16,17 @@
 			.area:hover {
 				fill: yellow;
 			}
+
+			rect {
+				-moz-transition: all 0.25s;
+				-o-transition: all 0.25s;
+				-webkit-transition: all 0.25s;
+				transition: all 0.25s;
+			}
+
+			rect:hover {
+				fill: yellow;
+			}
 	}
 	</style>
   <body>
@@ -202,16 +213,16 @@
 			// Set up everything for the first plot
 			var xScaleHist = d3.scaleBand()
 					 			        .domain(d3.range(year_observation.length))
-					 			        .range([paddingHist + 5, wHist])
+					 			        .range([paddingHist * 2 + 5, wHist])
 					 			        .paddingInner(0.05);
 
 			var yScaleHist = d3.scaleLinear()
 					 			        .domain([0, d3.max(d3.values(year_observation))])
-					 			        .range([hHist, 0]);
+					 			        .range([hHist, paddingHist + paddingHist/2]);
 
 			var xLabelHist = d3.scaleBand()
 												.domain(["Age 0-5","Age 6-17","Age 18-29","Age 30-39","Age 40-49","Age 50-64", "Above 64"])
-												.range([paddingHist,wHist])
+												.range([paddingHist * 2 , wHist])
 												.paddingInner(0.05);
 												// Define x axis
 			var xAxisHist = d3.axisBottom()
@@ -233,28 +244,63 @@
 							return xScaleHist(i);
 							})
 							.attr("y", function(d) {
-							return yScaleHist(d);
+							return yScaleHist(d) - paddingHist/2;
 							})
 							.attr("width", xScaleHist.bandwidth())
 							.attr("height", function(d, i) {
 							return hHist - yScaleHist(d);
 							})
 							.attr("fill", function(d) {
-							return "rgb(10, " + Math.round(70 + d * 4) + "," + Math.round(70 + d * 4) + ")";
+							return "rgb(255, 0, 255)";
+							})
+							.append("title") // for tool tip
+							.text(function(d) {
+								return "Number of people: " + d3.format(",")(d);
 							});
+							//.on("mouseover", function(d) {
+							//	d3.select(this)
+							//	.attr("fill", "yellow")
+							//});
 
-					// Make y axis
+			// Make y axis
 			svgHist.append("g")
 						.attr("class","y axis")
-						.attr("transform","translate(" + paddingHist + ",0)")
+						.attr("transform","translate(" + paddingHist * 2 + "," + -paddingHist/2 + ")")
 						.call(yAxisHist);
 
 			// Make x axis
 			svgHist.append("g")
 						.attr("class","x axis")
-						.attr("transform","translate(0," + hHist + ")")
+						.attr("transform","translate(0," + (hHist - paddingHist/2) + ")")
 						.call(xAxisHist);
 				});
+
+				// Create x axis label
+				svgHist.append("text")
+                      .attr("transform", "translate(" + (wHist/2 + paddingHist) + " , " + (hHist + paddingHist) + " )")
+                      .style("text-anchor", "middle")
+                      .text("Agegroups")
+                      .attr("fill", "black")
+                      .attr("font-size","16px");
+
+				// Create y axis label
+				svgHist.append("text")
+					.attr("transform", "rotate(-90)")
+					.attr("x", -hHist/2)
+					.attr("y", 0)
+					.style("text-anchor", "middle")
+					.text("Number of people in the agegroup")
+					.attr("fill", "black")
+					.attr("font-size","16px");
+
+				// Create header
+				svgHist.append("text")
+                        .attr("transform", "translate(" + (wHist/2 + paddingHist) + "," + paddingHist/2 + ")")
+                        .style("text-anchor", "middle")
+                        .text("Age distribution")
+                        .attr("font-weight", "bold")
+                        .attr("class", "header")
+                        .attr("font-size","25px");
 
 			// When clicked update with new data sets
 	     d3.selectAll("p")
@@ -327,8 +373,13 @@
 								})
 								.attr("fill", function(d) {
 									return "rgb(10, " + Math.round(70 + d * 4) + "," + Math.round(70 + d * 4) + ")";
+								})
+								.append("title") // for tool tip
+								.text(function(d) {
+									return d;
 								});
-							});
+
+								});
 							});
 					});
 		//});
