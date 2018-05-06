@@ -229,10 +229,11 @@
 
 			// Load the age data
 			d3.csv("Aggregated_data.csv", function(data) {
+				age_data = data;
 
 				//console.log('this is the aggregated data:')
 				//console.log(data)
-				data.forEach(function(d) {
+				age_data.forEach(function(d) {
 						if (+d.aar == Number(paragraphID)) {
 							year_observation.push(+d["alder_antal_0_5"])
 							year_observation.push(+d["alder_antal_6_17"])
@@ -335,8 +336,10 @@
                         .attr("font-weight", "bold")
                         .attr("class", "header")
                         .attr("font-size","25px");
-					});
 
+					//});
+
+				// Create stacked area chart
 				// create stack method
 			var stack = d3.stack()
 				.order(d3.stackOrderDescending);	// flipped stack order
@@ -418,77 +421,65 @@
 	     	.on("click", function() {
 	      	var paragraphID = d3.select(this).attr("id");
 
-					// Load in data for the histogram depending on the paragraphID
-					console.log('this is the aggregated data:')
-					console.log(data)
-					data.forEach(function(d) {
-							if (+d.aar == Number(paragraphID)) {
-								year_observation.push(+d["alder_antal_0_5"])
-								year_observation.push(+d["alder_antal_6_17"])
-								year_observation.push(+d["alder_antal_18_29"])
-								year_observation.push(+d["alder_antal_30_39"])
-								year_observation.push(+d["alder_antal_40_49"])
-								year_observation.push(+d["alder_antal_50_64"])
-								year_observation.push(+d["alder_antal_over_65"])
-							};
-							});
-							console.log(year_observation);
-						 // Set up the scales
- 			      var xScaleHist = d3.scaleBand()
- 			        //.domain(d3.range(year_observation+1))
-							.domain(d3.range(year_observation.length))
- 			        .range([0, wHist])
- 			        .paddingInner(0.05);
+year_observation = [];
 
-						var yScaleHist = d3.scaleLinear()
- 			        .domain([0, d3.max(d3.values(year_observation))])
- 			        .range([hHist, 0]);
+age_data.forEach(function(d) {
+		if (+d.aar == Number(paragraphID)) {
+			year_observation.push(+d["alder_antal_0_5"])
+			year_observation.push(+d["alder_antal_6_17"])
+			year_observation.push(+d["alder_antal_18_29"])
+			year_observation.push(+d["alder_antal_30_39"])
+			year_observation.push(+d["alder_antal_40_49"])
+			year_observation.push(+d["alder_antal_50_64"])
+			year_observation.push(+d["alder_antal_over_65"])
+		};
+	});
 
-						var xLabelHist = d3.scaleBand()
-							.domain(["age0_5","age6_17","age18_29","age30_39","age40_49","age50_64"])
-							.range([0,wHist])
-							.paddingInner(0.05);
-							// Define x axis
-						var xAxisHist = d3.axisBottom()
-							.scale(xLabelHist)
-							.ticks(7);
-							// Define y axis
-							var yAxisHist = d3.axisLeft()
-							.scale(yScaleHist);
+	// Update the histogram
+	// Update y scale
+	yScaleHist.domain([0, d3.max(d3.values(year_observation))]);
+
+	// Update bars
+	svgHist.selectAll("rect")
+			.data(year_observation)
+			.transition()
+			.delay(function(d, i) {
+				return i / year_observation.length;
+			})
+			.duration(1000)
+			.ease(d3.easeLinear)
+			.attr("x", function(d, i) {
+			return xScaleHist(i);
+			})
+			.attr("y", function(d) {
+			return yScaleHist(d) - paddingHist/2;
+			})
+			.attr("width", xScaleHist.bandwidth())
+			.attr("height", function(d, i) {
+			return hHist - yScaleHist(d);
+			})
+			.attr("fill", function(d) {
+			return "rgb(255, 0, 255)";
+			})
+			.text(function(d) {
+				return "Number of people: " + d3.format(",")(d);
+			});
+
+	// Update y axis
+	svgHist.select(".y.axis")
+		.transition()
+		.duration(1000)
+		.call(yAxisHist);
+
+	// Update stacked area chart
+			
+	});
+
+	
 
 
-/*
-						var columns = ["age0_5","age6_17","age18_29","age30_39","age40_49","age50_64"]
-							// Make the histogram
-						for(var i=0;i<columns.length;i++) {
 
-							var y = columns[i]
-							console.log(y);
-							var histHeightValue = year_observation[y];
-							console.log(histHeightValue);
-*/
-							svgHist.append("g")
-								.selectAll("rect")
-								.data(year_observation)
-								.enter()
-								.append("rect")
-								.attr("x", function(d, i) {
-									return xScaleHist(i + 1) + paddingHist;
-								})
-								.attr("y", function(d) {
-									return yScaleHist(d) + paddingHist * 2;
-								})
-								.attr("width", xScaleHist.bandwidth())
-								.attr("height", function(d, i) {
-									return hHist - yScaleHist(d);
-								})
-								.attr("fill", function(d) {
-									return "rgb(10, " + Math.round(70 + d * 4) + "," + Math.round(70 + d * 4) + ")";
-								})
-								.append("title") // for tool tip
-								.text(function(d) {
-									return d;
-								});
+
 
 								});
 							});
