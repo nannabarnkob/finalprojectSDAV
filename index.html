@@ -210,10 +210,11 @@
 
 			// for showing something when loading the page:
 
+			// Load the age data
 			d3.csv("Aggregated_data.csv", function(data) {
 
-				console.log('this is the aggregated data:')
-				console.log(data)
+				//console.log('this is the aggregated data:')
+				//console.log(data)
 				data.forEach(function(d) {
 						if (+d.aar == Number(paragraphID)) {
 							year_observation.push(+d["alder_antal_0_5"])
@@ -231,31 +232,31 @@
 					console.log("max:")
 					console.log(d3.max(d3.values(year_observation)))
 
-			// Set up everything for the first plot
+			// Define xscale for the histogram
 			var xScaleHist = d3.scaleBand()
 					 			        .domain(d3.range(year_observation.length))
 					 			        .range([paddingHist * 2 + 5, wHist])
 					 			        .paddingInner(0.05);
-
+			// Define yscale for the histogram
 			var yScaleHist = d3.scaleLinear()
 					 			        .domain([0, d3.max(d3.values(year_observation))])
 					 			        .range([hHist, paddingHist + paddingHist/2]);
-
+			// Create labels for the x axis
 			var xLabelHist = d3.scaleBand()
 												.domain(["Age 0-5","Age 6-17","Age 18-29","Age 30-39","Age 40-49","Age 50-64", "Above 64"])
 												.range([paddingHist * 2 , wHist])
 												.paddingInner(0.05);
-												// Define x axis
+			// Define x axis
 			var xAxisHist = d3.axisBottom()
 												.scale(xLabelHist);
 												
 
 
-												// Define y axis
-		  var yAxisHist = d3.axisLeft()
+			// Define y axis
+		  	var yAxisHist = d3.axisLeft()
 												.scale(yScaleHist);
 
-			// create bars
+			// Create bars
 			svgHist.append("g")
 							.selectAll("rect")
 							.data(year_observation)
@@ -278,23 +279,18 @@
 							.text(function(d) {
 								return "Number of people: " + d3.format(",")(d);
 							});
-							//.on("mouseover", function(d) {
-							//	d3.select(this)
-							//	.attr("fill", "yellow")
-							//});
-
-			// Make y axis
-			svgHist.append("g")
-						.attr("class","y axis")
-						.attr("transform","translate(" + paddingHist * 2 + "," + -paddingHist/2 + ")")
-						.call(yAxisHist);
 
 			// Make x axis
 			svgHist.append("g")
 						.attr("class","x axis")
 						.attr("transform","translate(0," + (hHist - paddingHist/2) + ")")
 						.call(xAxisHist);
-				});
+
+			// Create y axis
+			svgHist.append("g")
+						.attr("class","y axis")
+						.attr("transform","translate(" + paddingHist * 2 + "," + -paddingHist/2 + ")")
+						.call(yAxisHist);
 
 				// Create x axis label
 				svgHist.append("text")
@@ -322,6 +318,83 @@
                         .attr("font-weight", "bold")
                         .attr("class", "header")
                         .attr("font-size","25px");
+					});
+
+				// create stack method
+			var stack = d3.stack()
+				.order(d3.stackOrderDescending);	// flipped stack order
+
+			d3.csv("Aggregated_data_udd.csv", function(data) {
+				console.log(data)
+				education_data = data;
+				var keys = education_data.columns;
+				// remove the first three columns
+				keys.shift();
+				keys.pop();
+				stack.keys(keys);
+
+				var series = stack(education_data);
+
+				var xScaleArea = d3.scaleLinear()
+				.domain([2008, d3.max(education_data, function(d) {
+					return +d.aar;
+				})])
+				.range([paddingArea, wArea-paddingArea*2]);
+
+				var yScaleArea = d3.scaleLinear()
+					.domain([0,d3.max(education_data, function(d) {
+						var sum = 0;
+						for (var i = 0; i<keys.length; i++) {
+							sum += +d[keys[i]];
+						};
+						return sum;
+					})])
+					.range([hArea - paddingArea, paddingArea])
+					.nice();
+
+				var xAxisArea = d3.axisBottom()
+					.scale(xScaleArea)
+					.ticks(7);
+
+				var yAxisArea = d3.axisRight()
+					.scale(yScaleArea)
+					.ticks(5);
+
+				var area = d3.area()
+					.x(function(d) {
+						return xScaleArea(d.data.aar);
+					})
+					.y0(function(d) {
+						return yScaleArea(d[0]);
+					})
+					.y1(function(d) {
+						return yScaleArea(d[1]);
+					});
+
+				svgArea.selectAll("path")
+					.data(series)
+					.enter()
+					.append("path")
+					.attr("class","area")
+					.attr("d", area)
+					.attr("fill",function(d,i) {
+						return d3.schemeCategory20[i];
+					})
+					.append("title") // for tool tip
+					.text(function(d) {
+						return d.key;
+					})
+
+					svgArea.append("g")
+						.attr("class", "axis")
+						.attr("transform", "translate(0," + (hArea - paddingArea) + ")")
+						.call(xAxisArea);
+
+					svgArea.append("g")
+						.attr("class", "axis")
+						.attr("transform", "translate(" + (wArea - paddingArea * 2) + ", 0)")
+						.call(yAxisArea);
+
 
 			// When clicked update with new data sets
 	     d3.selectAll("p")
@@ -405,83 +478,7 @@
 					});
 		//});
 
-			// create stack method
-			var stack = d3.stack()
-				.order(d3.stackOrderDescending);	// flipped stack order
-
-			d3.csv("Aggregated_data_udd.csv", function(data) {
-				console.log(data)
-				education_data = data;
-				var keys = education_data.columns;
-				// remove the first three columns
-				keys.shift();
-				keys.pop();
-				stack.keys(keys);
-
-				var series = stack(education_data);
-
-				var xScaleArea = d3.scaleLinear()
-				.domain([2008, d3.max(education_data, function(d) {
-					return +d.aar;
-				})])
-				.range([paddingArea, wArea-paddingArea*2]);
-
-				var yScaleArea = d3.scaleLinear()
-					.domain([0,d3.max(education_data, function(d) {
-						var sum = 0;
-						for (var i = 0; i<keys.length; i++) {
-							sum += +d[keys[i]];
-						};
-						return sum;
-					})])
-					.range([hArea - paddingArea, paddingArea])
-					.nice();
-
-				var xAxisArea = d3.axisBottom()
-					.scale(xScaleArea)
-					.ticks(7);
-
-				var yAxisArea = d3.axisRight()
-					.scale(yScaleArea)
-					.ticks(5);
-
-				var area = d3.area()
-					.x(function(d) {
-						return xScaleArea(d.data.aar);
-					})
-					.y0(function(d) {
-						return yScaleArea(d[0]);
-					})
-					.y1(function(d) {
-						return yScaleArea(d[1]);
-					});
-
-				svgArea.selectAll("path")
-					.data(series)
-					.enter()
-					.append("path")
-					.attr("class","area")
-					.attr("d", area)
-					.attr("fill",function(d,i) {
-						return d3.schemeCategory20[i];
-					})
-					.append("title") // for tool tip
-					.text(function(d) {
-						return d.key;
-					})
-
-					svgArea.append("g")
-						.attr("class", "axis")
-						.attr("transform", "translate(0," + (hArea - paddingArea) + ")")
-						.call(xAxisArea);
-
-					svgArea.append("g")
-						.attr("class", "axis")
-						.attr("transform", "translate(" + (wArea - paddingArea * 2) + ", 0)")
-						.call(yAxisArea);
-
-				//	});
-
+			
 
 			});
 
