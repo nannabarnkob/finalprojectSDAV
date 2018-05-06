@@ -27,19 +27,36 @@
 			rect:hover {
 				fill: yellow;
 			}
+
+			.btn {
+		    border: none;
+		    background-color: inherit;
+		    padding: 14px 28px;
+		    font-size: 16px;
+		    cursor: pointer;
+		    display: inline-block;
+			}
+			/* Gray */
+			.default {
+			    color: black;
+			}
+
+			.default:hover {
+			    background: #e7e7e7;
+			}
 	}
 	</style>
   <body>
 		<div class="section">
     <div class="viz"> </div>
 
-		<p class ="statistic" id = "2008" > 2008 </p>
-		<p class ="statistic" id = "2009" > 2009 </p>
-		<p class ="statistic" id = "2010" > 2010 </p>
-		<p class ="statistic" id = "2011" > 2011 </p>
-		<p class ="statistic" id = "2012" > 2012 </p>
-		<p class ="statistic" id = "2013" > 2013 </p>
-		<p class ="statistic" id = "2014" > 2014 </p>
+		<button class ="statistic btn default" id = "2008" > 2008 </button>
+		<button class ="statistic btn default" id = "2009" > 2009 </button>
+		<button class ="statistic btn default" id = "2010" > 2010 </button>
+		<button class ="statistic btn default" id = "2011" > 2011 </button>
+		<button class ="statistic btn default" id = "2012" > 2012 </button>
+		<button class ="statistic btn default" id = "2013" > 2013 </button>
+
     <script type="text/javascript">
     // width and height for map of visualization
     var wMap = 1000;
@@ -249,7 +266,7 @@
 			// Define x axis
 			var xAxisHist = d3.axisBottom()
 												.scale(xLabelHist);
-												
+
 
 
 			// Define y axis
@@ -397,7 +414,7 @@
 
 
 			// When clicked update with new data sets
-	     d3.selectAll("p")
+	     d3.selectAll("button")
 	     	.on("click", function() {
 	      	var paragraphID = d3.select(this).attr("id");
 
