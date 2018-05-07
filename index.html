@@ -10,6 +10,8 @@
 		  font: 10px sans-serif;
 		}
 
+
+
 			.area {
 				stroke: none;
 			}
@@ -47,7 +49,9 @@
 	}
 	</style>
   <body>
+
 		<div class="section">
+			<p> Here you can move in time and space </p>
     <div class="viz"> </div>
 
 		<button class ="statistic btn default" id = "2008" > 2008 </button>
@@ -201,8 +205,12 @@
 					}
 				})
 				.on("mouseover", mouseOverHandler)
-				.on("mouseout", mouseOutHandler);
-//				.on("click", clickHandler);
+				.on("mouseout", mouseOutHandler)
+				.append("title")
+				.text(function(d) {
+					return "Area name: " + d.properties.rodenavn
+				});
+
 // log how many low- middle high class areas there should be
 				console.log(total_zeros,total_ones,total_twos)
 
@@ -213,17 +221,9 @@
 					d3.select(this).attr("fill", "rgb(100, 100, 100)")
 				}
 
-				function clickHandler(d, i) {
-					d3.select(this).attr("fill", "rgb(0, 0, 100)")
-					//var selected_rodenr = d.properties.rode_nr;
-					//console.log(selected_rodenr)
-
-					var age_distribution_data = [d.properties.alder_antal_0_5, d.properties.alder_antal_6_17, d.properties.alder_antal_18_29, d.properties.alder_antal_30_39, d.properties.alder_antal_40_49,d.properties.alder_antal_50_64, d.properties.alder_antal_over_65]
-					console.log(age_distribution_data)
-					//update_histogram(age_distribution_data, yScaleHist, svgHist);
-				}
 
 			d3.csv("Sorted_data.csv",function(data) {
+				var sorted_data = data;
 				//dataset = data;
 				data.forEach(d => {
 					if (+d.aar == 2008) {
@@ -370,11 +370,13 @@
 			var stack = d3.stack()
 				.order(d3.stackOrderDescending);	// flipped stack order
 
+				// load in aggregated education data for "all" option
 			d3.csv("Aggregated_data_udd.csv", function(data) {
+				console.log("original format of area chart data:")
 				console.log(data)
 				education_data = data;
 				var keys = education_data.columns;
-				// remove the first three columns
+				// remove the first and last column
 				keys.shift();
 				keys.pop();
 				stack.keys(keys);
@@ -433,14 +435,15 @@
 					})
 
 					svgArea.append("g")
-						.attr("class", "axis")
+						.attr("class", "x axis")
 						.attr("transform", "translate(0," + (hArea - paddingArea) + ")")
 						.call(xAxisArea);
 
 					svgArea.append("g")
-						.attr("class", "axis")
+						.attr("class", "y axis")
 						.attr("transform", "translate(" + (wArea - paddingArea * 2) + ", 0)")
 						.call(yAxisArea);
+						// area chart done
 
 
 			// new selection on map related to updating histogram
@@ -456,9 +459,12 @@
 
 					// collect data for histogram
 					var age_distribution_data = [d.properties.alder_antal_0_5, d.properties.alder_antal_6_17, d.properties.alder_antal_18_29, d.properties.alder_antal_30_39, d.properties.alder_antal_40_49,d.properties.alder_antal_50_64, d.properties.alder_antal_over_65]
+
 					console.log(age_distribution_data)
 					console.log(selected_rodenr)
+
 					update_histogram(age_distribution_data, yScaleHist, svgHist);
+					update_areachart(selected_rodenr)
 				})
 
 			// When clicked update with new data sets
@@ -482,6 +488,92 @@
 						update_histogram(year_observation, yScaleHist, svgHist);
 						// consider writing function for updating the map
 					});
+
+ 				// Function for updating the area chart
+
+
+	function update_areachart(selected_rodenr) {
+
+		// 1. update data set based on rode_nr - could be done on nested data but now just matching criteria
+		var education_data_rodenr = []
+		console.log("executing update areachart")
+
+		sorted_data.forEach(d => {
+			if (+d.rode_nr == selected_rodenr) {
+				education_data_rodenr.push(d);
+			}
+		})
+		console.log("education data for rodenr: " + selected_rodenr)
+
+
+		var education_data_subset = education_data_rodenr.map(function(d,i) {
+		  return {
+		    aar: d.aar,
+				antal_gymnasial_udd: d.antal_gymnasial_udd,
+				antal_erh_faglig_udd: d.antal_erh_faglig_udd,
+				antal_kort_viderg_udd: d.antal_kort_viderg_udd,
+				antal_mellemlang_viderg_udd: d.antal_mellemlang_viderg_udd,
+		    antal_lang_viderg_udd: d.antal_lang_viderg_udd,
+				antal_ingen_udd: d.antal_ingen_udd,
+				antal_under_udd: d.antal_under_udd
+		  };
+		});
+
+		console.log(education_data_subset)
+		var keys = Object.getOwnPropertyNames(education_data_subset[0]);
+		// remove the first and last column
+		keys.shift();
+		stack.keys(keys);
+
+		var series = stack(education_data_subset);
+
+	// 2. redefine y axis domain
+		var yScaleArea = d3.scaleLinear()
+				.domain([0,d3.max(education_data_subset, function(d) {
+					var sum = 0;
+					for (var i = 0; i<keys.length; i++) {
+						sum += +d[keys[i]];
+					};
+					return sum;
+				})]);
+
+		var area = d3.area()
+					.x(function(d) {
+						return xScaleArea(d.data.aar);
+					})
+					.y0(function(d) {
+						return yScaleArea(d[0]);
+					})
+					.y1(function(d) {
+						return yScaleArea(d[1]);
+					});
+
+					// 3. update paths and y axis
+		svgArea.selectAll("path")
+			.data(series)
+			.transition()
+				.duration(2500)
+				.attr("d", area)
+				.delay(function(d, i) {
+									return i / series.length;
+			})
+			.ease(d3.easeLinear)
+			.attr("fill",function(d,i) {
+				return d3.schemeCategory20[i];
+			});
+//			.append("title") // for tool tip
+//			.text(function(d) {
+//				return d.key;
+//			});
+
+
+			svgArea.select(".y.axis")
+				.transition()
+				.duration(1000)
+				.call(yAxisHist);
+	}
+
+
 
 	// Function for updating the histogram using a simple array for input
 	function update_histogram(age_data_array, yScaleHist, svgHist) {
