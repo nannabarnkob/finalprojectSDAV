@@ -74,20 +74,8 @@
 		var key = function(d){
 			return d.key;
 		};
-/*
-		//Define map projection
-	  var projection = d3.geoMercator()
-                 .translate([wMap/2, hMap/2])
-                 .scale((1<<22)/2/Math.PI);
-    //Define path generator
-    var path = d3.geoPath()
-								 .projection(projection)
-*/
+		// Array for colors
     var color = ['#64848E', '#DADED6', '#B6A693', '#9A9AA1', '#85818D']
-
-		var key = function(d) {
-			return d.key;
-		};
 
     //Create SVG elements for our visualization
     var svgMap = d3.select("div.viz")
@@ -146,7 +134,7 @@
 
 		// define starting year:
 		var paragraphID = "2008"
-
+		var selected_name = "All"
     d3.json("socio_data_kbh.geojson", function(json) {
 			console.log(json)
 			var projection = d3.geoMercator().fitSize([wMap, hMap], json);
@@ -163,15 +151,23 @@
 
 			// array for row with one year observation for creating over all histogram
 			var year_observation = [];
-
+			var total_zeros = 0;
+			var total_ones = 0;
+			var total_twos = 0;
 			// draw the map using the json file
 			map.selectAll('path')
 				.data(json.features)
 				.enter()
 				.append('path')
 				.attr('d', path)
-				.style("stroke-width", "1")
-				.style("stroke", "black")
+				.attr('id',function(d) {
+					return d.properties.rode_nr
+				})
+				.attr('text',function(d) {
+					return d.properties.rodenavn
+				})
+				.style("stroke-width", "0.5")
+				.style("stroke", "white")
 				.style("fill", function(d){
 					// make array of three income values
 					var obj = [d.properties.pct_hoj_indkomst, d.properties.pct_middel_indkomst, d.properties.pct_lav_indkomst]
@@ -180,23 +176,52 @@
 					// only plot color for chosen year:
 
 					if (+d.properties.aar == Number(paragraphID)) {
-						console.log(+d.properties.aar)
-						console.log(maxKey)
-						console.log(obj)
+						//console.log(+d.properties.aar)
+						//console.log(maxKey)
+						//console.log(obj)
 						// if most prevalent area is high income:
 						if(maxKey == 0) {
-							return "rgb(0,250,250)";
+							//console.log("Making a high income color")
+							total_zeros += 1;
+							var area_color = "rgb(100,100,100)";
 						}
 						// if most prevalent is middle income:
 						if(maxKey == 1) {
-							return "rgb(100, 0, 100)";
+							//console.log("Making a middle income color")
+							total_ones += 1;
+							var area_color = "rgb(100, 200, 100)";
 						}
 						// if most prevalent area is low income:
 						if(maxKey == 2) {
-							return "rgb(100, 100, 0)";
+							//console.log("Making a low income color")
+							total_twos += 1;
+							var area_color = "rgb(100, 100, 200)";
 						}
+						return area_color
 					}
-				});
+				})
+				.on("mouseover", mouseOverHandler)
+				.on("mouseout", mouseOutHandler);
+//				.on("click", clickHandler);
+// log how many low- middle high class areas there should be
+				console.log(total_zeros,total_ones,total_twos)
+
+				function mouseOverHandler(d, i) {
+					d3.select(this).attr("fill", "rgb(50, 50, 50)")
+				}
+				function mouseOutHandler(d, i) {
+					d3.select(this).attr("fill", "rgb(100, 100, 100)")
+				}
+
+				function clickHandler(d, i) {
+					d3.select(this).attr("fill", "rgb(0, 0, 100)")
+					//var selected_rodenr = d.properties.rode_nr;
+					//console.log(selected_rodenr)
+
+					var age_distribution_data = [d.properties.alder_antal_0_5, d.properties.alder_antal_6_17, d.properties.alder_antal_18_29, d.properties.alder_antal_30_39, d.properties.alder_antal_40_49,d.properties.alder_antal_50_64, d.properties.alder_antal_over_65]
+					console.log(age_distribution_data)
+					//update_histogram(age_distribution_data, yScaleHist, svgHist);
+				}
 
 			d3.csv("Sorted_data.csv",function(data) {
 				//dataset = data;
@@ -335,6 +360,7 @@
                         .text("Age distribution")
                         .attr("font-weight", "bold")
                         .attr("class", "header")
+												.attr("id", "headerHist")
                         .attr("font-size","25px");
 
 					//});
@@ -374,7 +400,8 @@
 
 				var xAxisArea = d3.axisBottom()
 					.scale(xScaleArea)
-					.ticks(7);
+					.ticks(7)
+					.tickFormat(d3.format(".4"));
 
 				var yAxisArea = d3.axisRight()
 					.scale(yScaleArea)
@@ -416,78 +443,90 @@
 						.call(yAxisArea);
 
 
+			// new selection on map related to updating histogram
+			map.selectAll("path")
+				.on("click", function(d) {
+					// highlight selected area:
+					d3.select(this).attr("fill", "rgb(200, 0, 100)")
+
+					var selected_rodenr = d3.select(this).attr("id");
+					var selected_name = d3.select(this).attr("text");
+					// update title according to selected area:
+					svgHist.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
+
+					// collect data for histogram
+					var age_distribution_data = [d.properties.alder_antal_0_5, d.properties.alder_antal_6_17, d.properties.alder_antal_18_29, d.properties.alder_antal_30_39, d.properties.alder_antal_40_49,d.properties.alder_antal_50_64, d.properties.alder_antal_over_65]
+					console.log(age_distribution_data)
+					console.log(selected_rodenr)
+					update_histogram(age_distribution_data, yScaleHist, svgHist);
+				})
+
 			// When clicked update with new data sets
 	     d3.selectAll("button")
 	     	.on("click", function() {
 	      	var paragraphID = d3.select(this).attr("id");
+					svgHist.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
+					year_observation = [];
 
-year_observation = [];
+					age_data.forEach(function(d) {
+							if (+d.aar == Number(paragraphID)) {
+								year_observation.push(+d["alder_antal_0_5"])
+								year_observation.push(+d["alder_antal_6_17"])
+								year_observation.push(+d["alder_antal_18_29"])
+								year_observation.push(+d["alder_antal_30_39"])
+								year_observation.push(+d["alder_antal_40_49"])
+								year_observation.push(+d["alder_antal_50_64"])
+								year_observation.push(+d["alder_antal_over_65"])
+							};
+						});
+						update_histogram(year_observation, yScaleHist, svgHist);
+						// consider writing function for updating the map
+					});
 
-age_data.forEach(function(d) {
-		if (+d.aar == Number(paragraphID)) {
-			year_observation.push(+d["alder_antal_0_5"])
-			year_observation.push(+d["alder_antal_6_17"])
-			year_observation.push(+d["alder_antal_18_29"])
-			year_observation.push(+d["alder_antal_30_39"])
-			year_observation.push(+d["alder_antal_40_49"])
-			year_observation.push(+d["alder_antal_50_64"])
-			year_observation.push(+d["alder_antal_over_65"])
-		};
-	});
+	// Function for updating the histogram using a simple array for input
+	function update_histogram(age_data_array, yScaleHist, svgHist) {
 
-	// Update the histogram
-	// Update y scale
-	yScaleHist.domain([0, d3.max(d3.values(year_observation))]);
+		// update the y scale
+		yScaleHist.domain([0, d3.max(d3.values(age_data_array))]);
 
-	// Update bars
-	svgHist.selectAll("rect")
-			.data(year_observation)
+		// Update bars
+		svgHist.selectAll("rect")
+				.data(age_data_array)
+				.transition()
+				.delay(function(d, i) {
+					return i / age_data_array.length;
+				})
+				.duration(1000)
+				.ease(d3.easeLinear)
+				.attr("x", function(d, i) {
+				return xScaleHist(i);
+				})
+				.attr("y", function(d) {
+				return yScaleHist(d) - paddingHist/2;
+				})
+				.attr("width", xScaleHist.bandwidth())
+				.attr("height", function(d, i) {
+				return hHist - yScaleHist(d);
+				})
+				.attr("fill", function(d) {
+				return "rgb(255, 0, 255)";
+				})
+				.text(function(d) {
+					return "Number of people: " + d3.format(",")(d);
+				});
+
+		// Update y axis
+		svgHist.select(".y.axis")
 			.transition()
-			.delay(function(d, i) {
-				return i / year_observation.length;
-			})
 			.duration(1000)
-			.ease(d3.easeLinear)
-			.attr("x", function(d, i) {
-			return xScaleHist(i);
-			})
-			.attr("y", function(d) {
-			return yScaleHist(d) - paddingHist/2;
-			})
-			.attr("width", xScaleHist.bandwidth())
-			.attr("height", function(d, i) {
-			return hHist - yScaleHist(d);
-			})
-			.attr("fill", function(d) {
-			return "rgb(255, 0, 255)";
-			})
-			.text(function(d) {
-				return "Number of people: " + d3.format(",")(d);
-			});
+			.call(yAxisHist);
+		}
 
-	// Update y axis
-	svgHist.select(".y.axis")
-		.transition()
-		.duration(1000)
-		.call(yAxisHist);
-
-	// Update stacked area chart
-			
 	});
 
-	
 
-
-
-
-
-								});
 							});
 					});
-		//});
-
-			
-
 			});
 
 
