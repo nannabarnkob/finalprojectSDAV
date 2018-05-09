@@ -78,6 +78,10 @@
 		var key = function(d){
 			return d.key;
 		};
+
+		function add(a, b) {
+    	return a + b;
+		}
 		// Array for colors
     var color = ['#64848E', '#DADED6', '#B6A693', '#9A9AA1', '#85818D']
 
@@ -137,8 +141,9 @@
             .attr("opacity", 0);
 
 		// define starting year:
-		var paragraphID = "2008"
+		var paragraphID = "2013"
 		var selected_name = "All"
+
     d3.json("socio_data_kbh.geojson", function(json) {
 			console.log(json)
 			var projection = d3.geoMercator().fitSize([wMap, hMap], json);
@@ -159,67 +164,79 @@
 			var total_ones = 0;
 			var total_twos = 0;
 			// draw the map using the json file
-			map.selectAll('path')
+			map.selectAll("path")
 				.data(json.features)
 				.enter()
-				.append('path')
-				.attr('d', path)
-				.attr('id',function(d) {
+				.append("path")
+				.attr("d", path)
+				.attr("id",function(d) {
 					return d.properties.rode_nr
 				})
-				.attr('text',function(d) {
+				.attr("text",function(d) {
 					return d.properties.rodenavn
 				})
-				.style("stroke-width", "0.5")
-				.style("stroke", "white")
-				.style("fill", function(d){
-					// make array of three income values
-					var obj = [d.properties.pct_hoj_indkomst, d.properties.pct_middel_indkomst, d.properties.pct_lav_indkomst]
-					// find index of max value
-					var maxKey = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
-					// only plot color for chosen year:
-
+				.attr("stroke-width", "0.5")
+				.attr("stroke", "white")
+				.attr("fill", function(d, i) {
+					//return "rgb(100,200,100)"
+					// only use data from chosen year
 					if (+d.properties.aar == Number(paragraphID)) {
-						//console.log(+d.properties.aar)
-						//console.log(maxKey)
-						//console.log(obj)
-						// if most prevalent area is high income:
-						if(maxKey == 0) {
-							//console.log("Making a high income color")
-							total_zeros += 1;
-							var area_color = "rgb(100,100,100)";
+						// make array of three income values
+						var obj = [d.properties.pct_hoj_indkomst, d.properties.pct_middel_indkomst, d.properties.pct_lav_indkomst]
+						console.log(obj)
+
+
+
+						if (obj.reduce(add, 0) == 0) {
+							console.log("Array was zeros, no income data")
+							return "rgb(255, 204, 0)"
 						}
-						// if most prevalent is middle income:
-						if(maxKey == 1) {
-							//console.log("Making a middle income color")
-							total_ones += 1;
-							var area_color = "rgb(100, 200, 100)";
+						else if(obj.reduce(add, 0) != 0) {
+							// find index of max value
+							var maxKey = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
+							// only plot color for chosen year:
+							console.log(+d.properties.aar)
+							console.log(maxKey)
+							//console.log(obj)
+							// if most prevalent area is high income:
+							if(maxKey == 0) {
+								console.log("Making a high income color")
+								total_zeros += 1
+								return "rgb(51, 204, 51)"
+							}
+							// if most prevalent is middle income:
+							if(maxKey == 1) {
+								console.log("Making a middle income color")
+								total_ones += 1
+								return "rgb(255, 204, 0)"
+							}
+							// if most prevalent area is low income:
+							if(maxKey == 2) {
+								console.log("Making a low income color")
+								total_twos += 1
+								return "rgb(255, 0, 0)"
+							}
 						}
-						// if most prevalent area is low income:
-						if(maxKey == 2) {
-							//console.log("Making a low income color")
-							total_twos += 1;
-							var area_color = "rgb(100, 100, 200)";
-						}
-						return area_color
 					}
 				})
-				.on("mouseover", mouseOverHandler)
-				.on("mouseout", mouseOutHandler)
 				.append("title")
 				.text(function(d) {
 					return "Area name: " + d.properties.rodenavn
 				});
 
-// log how many low- middle high class areas there should be
+
+				// log how many low- middle high class areas there should be
 				console.log(total_zeros,total_ones,total_twos)
 
+				// functions for handling what happens when you hover on the map
 				function mouseOverHandler(d, i) {
-					d3.select(this).attr("fill", "rgb(50, 50, 50)")
+					d3.select(this).attr("stroke-width", "1.5")
+
 				}
 				function mouseOutHandler(d, i) {
-					d3.select(this).attr("fill", "rgb(100, 100, 100)")
+					d3.select(this).attr("stroke-width", "0.5")
 				}
+
 
 
 			d3.csv("Sorted_data.csv",function(data) {
@@ -448,7 +465,10 @@
 
 			// new selection on map related to updating histogram
 			map.selectAll("path")
+				.on("mouseover", mouseOverHandler)
+				.on("mouseout", mouseOutHandler)
 				.on("click", function(d) {
+					console.log(d)
 					// highlight selected area:
 					d3.select(this).attr("fill", "rgb(200, 0, 100)")
 
