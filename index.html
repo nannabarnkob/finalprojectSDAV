@@ -3,6 +3,7 @@
     <meta charset="utf-8">
     <title>Final project: Social Data Analysis and Visualization</title>
     <script src="https://d3js.org/d3.v4.min.js"></script>
+		<script src='https://api.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js'></script>
 		<link rel="stylesheet" href="style.css">
   </head>
 	<style>
@@ -69,6 +70,7 @@
 		var hHist = 400;
 		var wArea = 500;
 		var hArea = 400;
+		var centered;
     // define padding
     var paddingMap = 20;
 		var paddingHist = 30;
@@ -138,7 +140,8 @@
     				.attr("y", 0)
             .attr("width", wMap)
     				.attr("height", hMap)
-            .attr("opacity", 0);
+            .attr("opacity", 0)
+						.on("click",clicked);
 
 		// define starting year:
 		var paragraphID = "2013"
@@ -164,7 +167,8 @@
 			var total_ones = 0;
 			var total_twos = 0;
 			// draw the map using the json file
-			map.selectAll("path")
+			map.append("g")
+				 .selectAll("path")
 				.data(json.features)
 				.enter()
 				.append("path")
@@ -219,6 +223,7 @@
 						}
 					}
 				})
+				.on("click",clicked)
 				.append("title")
 				.text(function(d) {
 					return "Area name: " + d.properties.rodenavn
@@ -485,6 +490,8 @@
 
 					update_histogram(age_distribution_data, yScaleHist, svgHist);
 					update_areachart(selected_rodenr)
+
+					clicked(d)
 				})
 
 			// When clicked update with new data sets
@@ -683,6 +690,35 @@
              .style("fill","black");
 
 					 });*/
+
+function clicked(d) {
+	d3.json("socio_data_kbh.geojson", function(json){
+		var projection = d3.geoMercator().fitSize([wMap, hMap], json);
+			var x,y,k;
+			if(d && centered !== d){
+					var centroid = turf.centroid(d);
+
+				NewCenter = projection([centroid.geometry.coordinates[0],centroid.geometry.coordinates[1]])
+				console.log(NewCenter)
+				x = NewCenter[0]
+				y = NewCenter[1]
+				k = 3;
+				centered = d;
+			} else{
+				x = (wMap-200) / 2;
+				y = hMap / 2;
+				k = 1;
+				centered = null;
+			}
+map.selectAll("path")
+ .classed("active", centered && function(d) { return d === centered; });
+
+map.transition()
+ .duration(700)
+ .attr("transform", "translate(" + (wMap-200) / 2 + "," + hMap / 2 + ")scale(" + k + ")translate(" + -x + "," + -y  + ")")
+ .style("stroke-width", 1.5 / k + "px");
+})
+}
     </script>
   </body>
 </html>
