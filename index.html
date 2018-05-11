@@ -102,39 +102,12 @@
 						.append("svg")
 						.attr("width", wArea + paddingArea)
 						.attr("height", hArea + paddingArea);
-    // define zoom function(add scaleExtent if necessary)
-/*
-	  var zoom = d3.zoom()
-           .translateExtent([[ -300, -200 ], [ 300, 200 ]])
-           .on("zoom", zooming);
 
-    var zooming = function(d) {
-     				//Log out d3.event.transform, so you can see all the goodies inside
-     				console.log(d3.event.transform);
-     				//New offset array
-     				var offset = [d3.event.transform.x, d3.event.transform.y];
-     				//Calculate new scale
-     				var newScale = d3.event.transform.k * 5000;
-     				//Update projection with new offset and scale
-     				projection.translate(offset)
-     						  .scale(newScale);
-
-     				//Update all paths and circles
-     				svgMap.selectAll("path")
-     					.attr("d", path);
-    };
-*/
-
-//Create a container in which all zoom-able elements will live
+		//Create the map to which we append everything ...
 	  var map = svgMap.append("g")
 	        .attr("id", "map");
-//	        .call(zoom)  //Bind the zoom behavior
-//	        .call(zoom.transform, d3.zoomIdentity  //Then apply the initial transform
-//	          .translate(wMap/2, hMap/2)
-//	          .scale(1000)
-//	          .translate(-center[0], -center[1]));
 
-    //Create a new, invisible background rect to catch zoom events
+		//Create a new, invisible background rect to catch zoom events
     map.append("rect")
           	.attr("x", 0)
     				.attr("y", 0)
@@ -147,11 +120,44 @@
 		var paragraphID = "2013"
 		var selected_name = "All"
 
+		function clicked(d,json) {
+			var projection = d3.geoMercator().fitSize([wMap, hMap], json);
+			var x,y,k;
+			if(d && centered !== d) {
+					var centroid = turf.centroid(d);
+
+				var NewCenter = projection([centroid.geometry.coordinates[0],centroid.geometry.coordinates[1]])
+				console.log(NewCenter)
+				x = NewCenter[0]
+				y = NewCenter[1]
+				k = 3;
+				centered = d;
+			}
+			else {
+				x = (wMap-200) / 2;
+				y = hMap / 2;
+				k = 1;
+				centered = null;
+			}
+
+			map.selectAll("path")
+			 .classed("active", centered && function(d) { return d === centered; });
+
+			map.transition()
+			 .duration(700)
+			 .attr("transform", "translate(" + (wMap-200) / 2 + "," + hMap / 2 + ")scale(" + k + ")translate(" + -x + "," + -y  + ")")
+			 .attr("stroke-width", 1.5 / k + "px");
+		 }
+
     d3.json("socio_data_kbh.geojson", function(json) {
+
 			console.log(json)
+
 			var projection = d3.geoMercator().fitSize([wMap, hMap], json);
 			var path = d3.geoPath().projection(projection);
 
+			// for adding some zooming behavior
+	/*
 			// Make arrays for the different years
 			var aar2008 = [];
 			var aar2009 = [];
@@ -160,7 +166,7 @@
 			var aar2012 = [];
 			var aar2013 = [];
 			var aar2014 = [];
-
+*/
 			// array for row with one year observation for creating over all histogram
 			var year_observation = [];
 			var total_zeros = 0;
@@ -188,8 +194,6 @@
 						// make array of three income values
 						var obj = [d.properties.pct_hoj_indkomst, d.properties.pct_middel_indkomst, d.properties.pct_lav_indkomst]
 						console.log(obj)
-
-
 
 						if (obj.reduce(add, 0) == 0) {
 							console.log("Array was zeros, no income data")
@@ -247,6 +251,7 @@
 			d3.csv("Sorted_data.csv",function(data) {
 				var sorted_data = data;
 				//dataset = data;
+/*
 				data.forEach(d => {
 					if (+d.aar == 2008) {
 						aar2008.push(d);
@@ -270,6 +275,7 @@
 						aar2014.push(d);
 					}
 				})
+				*/
 
 
 			// for showing something when loading the page:
@@ -490,8 +496,8 @@
 
 					update_histogram(age_distribution_data, yScaleHist, svgHist);
 					update_areachart(selected_rodenr)
-
-					clicked(d)
+					// add zoom / panning behavior
+					clicked(d,json)
 				})
 
 			// When clicked update with new data sets
@@ -512,12 +518,58 @@
 								year_observation.push(+d["alder_antal_over_65"])
 							};
 						});
-						update_histogram(year_observation, yScaleHist, svgHist);
-						// consider writing function for updating the map
+						update_histogram(year_observation);
+						update_map(paragraphID)
 					});
 
  				// Function for updating the area chart
+			function update_map(paragraphID) {
 
+				console.log("updating map")
+				map.selectAll("path")
+				.attr("fill", function(d, i) {
+					//return "rgb(100,200,100)"
+					// only use data from chosen year
+					if (+d.properties.aar == Number(paragraphID)) {
+						// make array of three income values
+						var obj = [d.properties.pct_hoj_indkomst, d.properties.pct_middel_indkomst, d.properties.pct_lav_indkomst]
+						console.log(obj)
+
+
+
+						if (obj.reduce(add, 0) == 0) {
+							console.log("Array was zeros, no income data")
+							return "rgb(255, 204, 0)"
+						}
+						else if(obj.reduce(add, 0) != 0) {
+							// find index of max value
+							var maxKey = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
+							// only plot color for chosen year:
+							console.log(+d.properties.aar)
+							console.log(maxKey)
+							//console.log(obj)
+							// if most prevalent area is high income:
+							if(maxKey == 0) {
+								console.log("Making a high income color")
+								total_zeros += 1
+								return "rgb(51, 204, 51)"
+							}
+							// if most prevalent is middle income:
+							if(maxKey == 1) {
+								console.log("Making a middle income color")
+								total_ones += 1
+								return "rgb(255, 204, 0)"
+							}
+							// if most prevalent area is low income:
+							if(maxKey == 2) {
+								console.log("Making a low income color")
+								total_twos += 1
+								return "rgb(255, 0, 0)"
+							}
+						}
+					}
+				});
+			}
 
 	function update_areachart(selected_rodenr) {
 
@@ -603,7 +655,7 @@
 
 
 	// Function for updating the histogram using a simple array for input
-	function update_histogram(age_data_array, yScaleHist, svgHist) {
+	function update_histogram(age_data_array) {
 
 		// update the y scale
 		yScaleHist.domain([0, d3.max(d3.values(age_data_array))]);
@@ -636,10 +688,12 @@
 
 		// Update y axis
 		svgHist.select(".y.axis")
-			.transition()
-			.duration(1000)
-			.call(yAxisHist);
-		}
+					.transition()
+					.duration(1000)
+					.call(yAxisHist);
+	}
+
+
 
 	});
 
@@ -689,36 +743,37 @@
              .attr("d", path)
              .style("fill","black");
 
-					 });*/
+					 });
 
 function clicked(d) {
-	d3.json("socio_data_kbh.geojson", function(json){
-		var projection = d3.geoMercator().fitSize([wMap, hMap], json);
-			var x,y,k;
-			if(d && centered !== d){
-					var centroid = turf.centroid(d);
+		d3.json("socio_data_kbh.geojson", function(json){
+			var projection = d3.geoMercator().fitSize([wMap, hMap], json);
+				var x,y,k;
+				if(d && centered !== d){
+						var centroid = turf.centroid(d);
 
-				NewCenter = projection([centroid.geometry.coordinates[0],centroid.geometry.coordinates[1]])
-				console.log(NewCenter)
-				x = NewCenter[0]
-				y = NewCenter[1]
-				k = 3;
-				centered = d;
-			} else{
-				x = (wMap-200) / 2;
-				y = hMap / 2;
-				k = 1;
-				centered = null;
-			}
-map.selectAll("path")
- .classed("active", centered && function(d) { return d === centered; });
+					NewCenter = projection([centroid.geometry.coordinates[0],centroid.geometry.coordinates[1]])
+					console.log(NewCenter)
+					x = NewCenter[0]
+					y = NewCenter[1]
+					k = 3;
+					centered = d;
+				} else{
+					x = (wMap-200) / 2;
+					y = hMap / 2;
+					k = 1;
+					centered = null;
+				}
+	map.selectAll("path")
+	 .classed("active", centered && function(d) { return d === centered; });
 
-map.transition()
- .duration(700)
- .attr("transform", "translate(" + (wMap-200) / 2 + "," + hMap / 2 + ")scale(" + k + ")translate(" + -x + "," + -y  + ")")
- .style("stroke-width", 1.5 / k + "px");
-})
+	map.transition()
+	 .duration(700)
+	 .attr("transform", "translate(" + (wMap-200) / 2 + "," + hMap / 2 + ")scale(" + k + ")translate(" + -x + "," + -y  + ")")
+	 .style("stroke-width", 1.5 / k + "px");
+	})
 }
+*/
     </script>
   </body>
 </html>
