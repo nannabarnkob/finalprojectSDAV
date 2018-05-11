@@ -100,7 +100,7 @@
 			.attr("id", "2008")
 			.text("2008");
 
-		
+
 		d3.select("div.viz")
 			.append("button")
 			.attr("class", "statistic btn default")
@@ -202,33 +202,90 @@
 			 .attr("stroke-width", 1.5 / k + "px");
 		 }
 
-    d3.json("socio_data_kbh.geojson", function(json) {
+		 		 var temp2008 = 0
+		 		 var temp2009 = 0
+		 		 var temp2010 = 0
+		 		 var temp2011 = 0
+		 		 var temp2012 = 0
+		 		 var temp2013 = 0
+		 		 var temp2014 = 0
 
-			console.log(json)
+		 		 d3.json("socio_data_kbh.geojson", function(json) {
 
-			var projection = d3.geoMercator().fitSize([wMap, hMap], json);
-			var path = d3.geoPath().projection(projection);
+		 			 console.log(json)
+		 			 var year2008 = JSON.parse(JSON.stringify(json))
+		 			 var year2009 = JSON.parse(JSON.stringify(json))
+		 			 var year2010 = JSON.parse(JSON.stringify(json))
+		 			 var year2011 = JSON.parse(JSON.stringify(json))
+		 			 var year2012 = JSON.parse(JSON.stringify(json))
+		 			 var year2013 = JSON.parse(JSON.stringify(json))
+		 			 var year2014 = JSON.parse(JSON.stringify(json))
 
-			// for adding some zooming behavior
-	/*
-			// Make arrays for the different years
-			var aar2008 = [];
-			var aar2009 = [];
-			var aar2010 = [];
-			var aar2011 = [];
-			var aar2012 = [];
-			var aar2013 = [];
-			var aar2014 = [];
-*/
+		 			 var temp2008 = 0
+		 			 var temp2009 = 0
+		 			 var temp2010 = 0
+		 			 var temp2011 = 0
+		 			 var temp2012 = 0
+		 			 var temp2013 = 0
+		 			 var temp2014 = 0
+
+		 			 var L = json.features.length
+		 			 for(k = 0; k < L; k++) {
+		 				 var d = json.features[k]
+		 				 if (+d.properties.aar != 2008) {
+		 					 year2008.features.splice(temp2008,1)
+		 					 temp2008--
+		 				 }
+		 				 if (+d.properties.aar != 2009) {
+		 					 year2009.features.splice(temp2009,1)
+		 					 temp2009--
+		 				 }
+		 				 if (+d.properties.aar != 2010) {
+		 					 year2010.features.splice(temp2010,1)
+		 					 temp2010--
+		 				 }
+		 				 if (+d.properties.aar != 2011) {
+		 					 year2011.features.splice(temp2011,1)
+		 					 temp2011--
+		 				 }
+		 				 if (+d.properties.aar != 2012) {
+		 					 year2012.features.splice(temp2012,1)
+		 					 temp2012--
+		 				 }
+		 				 if (+d.properties.aar != 2013) {
+		 					 year2013.features.splice(temp2013,1)
+		 					 temp2013--
+		 				 }
+		 				 if (+d.properties.aar != 2014) {
+		 					 year2014.features.splice(temp2014,1)
+		 					 temp2014--
+		 				 }
+		 				 temp2008++
+		 				 temp2009++
+		 				 temp2010++
+		 				 temp2011++
+		 				 temp2012++
+		 				 temp2013++
+		 				 temp2014++
+		 			 }
+
+		 			 var selected_year_data;
+
+
+		 			var projection = d3.geoMercator().fitSize([wMap, hMap], year2008);
+		 			var path = d3.geoPath().projection(projection);
+
 			// array for row with one year observation for creating over all histogram
 			var year_observation = [];
 			var total_zeros = 0;
 			var total_ones = 0;
 			var total_twos = 0;
-			// draw the map using the json file
-			map.append("g")
-				 .selectAll("path")
-				.data(json.features)
+			// draw the map using the json arrays
+
+			var choropleth = map.append("g")
+				.attr("id","choropleth")
+				.selectAll("path")
+				.data(year2008.features)
 				.enter()
 				.append("path")
 				.attr("d", path)
@@ -241,42 +298,34 @@
 				.attr("stroke-width", "0.5")
 				.attr("stroke", "white")
 				.attr("fill", function(d, i) {
-					//return "rgb(100,200,100)"
-					// only use data from chosen year
-					if (+d.properties.aar == Number(paragraphID)) {
-						// make array of three income values
-						var obj = [d.properties.pct_hoj_indkomst, d.properties.pct_middel_indkomst, d.properties.pct_lav_indkomst]
-						console.log(obj)
+					// make array of three income values
+					var obj = [d.properties.pct_hoj_indkomst, d.properties.pct_middel_indkomst, d.properties.pct_lav_indkomst]
+					if (obj.reduce(add, 0) == 0) {
+						// fill path with white (can be changed)
+						return "rgb(255, 255, 255)"
+					}
 
-						if (obj.reduce(add, 0) == 0) {
-							console.log("Array was zeros, no income data")
+					else if(obj.reduce(add, 0) != 0) {
+						// find index of max value
+						var maxKey = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
+						// only plot color for chosen year:
+						// if most prevalent area is high income:
+						if(maxKey == 0) {
+
+							total_zeros += 1
+							return "rgb(51, 204, 51)"
+						}
+						// if most prevalent is middle income:
+						if(maxKey == 1) {
+
+							total_ones += 1
 							return "rgb(255, 204, 0)"
 						}
-						else if(obj.reduce(add, 0) != 0) {
-							// find index of max value
-							var maxKey = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
-							// only plot color for chosen year:
-							console.log(+d.properties.aar)
-							console.log(maxKey)
-							//console.log(obj)
-							// if most prevalent area is high income:
-							if(maxKey == 0) {
-								console.log("Making a high income color")
-								total_zeros += 1
-								return "rgb(51, 204, 51)"
-							}
-							// if most prevalent is middle income:
-							if(maxKey == 1) {
-								console.log("Making a middle income color")
-								total_ones += 1
-								return "rgb(255, 204, 0)"
-							}
-							// if most prevalent area is low income:
-							if(maxKey == 2) {
-								console.log("Making a low income color")
-								total_twos += 1
-								return "rgb(255, 0, 0)"
-							}
+						// if most prevalent area is low income:
+						if(maxKey == 2) {
+
+							total_twos += 1
+							return "rgb(255, 0, 0)"
 						}
 					}
 				})
@@ -308,7 +357,7 @@
 				.attr("class", "header")
 				.attr("id", "headerHist")
 				.attr("font-size","25px");
-	
+
 
 			d3.csv("Sorted_data.csv",function(data) {
 				var sorted_data = data;
@@ -591,75 +640,114 @@
 				})
 
 		// When clicked update with new data sets
-	     d3.selectAll("button")
-	     	.on("click", function() {
-	      	var paragraphID = d3.select(this).attr("id");
-					svgText.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
-					year_observation = [];
+		d3.selectAll("button")
+ 		.on("click", function() {
+ 			var getParagraphID = d3.select(this).attr("id");
+ 			// if selected option is all areas, update using the aggregated data and the previously chosen year
+ 			if (getParagraphID == "AllAreas") {
+ 				// update using aggregated data
+ 				paragraphID = last_chosen_year
+ 				selected_name = "All"
+ 				age_data.forEach(function(d) {
+ 						if (+d.aar == Number(paragraphID)) {
+ 							year_observation.push(+d["alder_antal_0_5"])
+ 							year_observation.push(+d["alder_antal_6_17"])
+ 							year_observation.push(+d["alder_antal_18_29"])
+ 							year_observation.push(+d["alder_antal_30_39"])
+ 							year_observation.push(+d["alder_antal_40_49"])
+ 							year_observation.push(+d["alder_antal_50_64"])
+ 							year_observation.push(+d["alder_antal_over_65"])
+ 						};
+ 					});
+ 					update_histogram(year_observation);
 
-					age_data.forEach(function(d) {
-							if (+d.aar == Number(paragraphID)) {
-								year_observation.push(+d["alder_antal_0_5"])
-								year_observation.push(+d["alder_antal_6_17"])
-								year_observation.push(+d["alder_antal_18_29"])
-								year_observation.push(+d["alder_antal_30_39"])
-								year_observation.push(+d["alder_antal_40_49"])
-								year_observation.push(+d["alder_antal_50_64"])
-								year_observation.push(+d["alder_antal_over_65"])
-							};
-						});
-						update_histogram(year_observation);
-						update_map(paragraphID)
-					});
+ 			}
+ 			else {
+ 				paragraphID = getParagraphID
+ 				last_chosen_year = paragraphID
+ 			}
+
+ 			svgHist.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
+ 			year_observation = [];
+
+ 			// currently take aggregated age data to show, this should only happen if viewing all areas
+
+ 				update_map(paragraphID)
+ 			});
+
+
 
  			// Function for updating the map
 			function update_map(paragraphID) {
 
+
 				console.log("updating map")
+
+
+				if (paragraphID == "2008") {
+					selected_year_data = year2008
+					console.log("selected 2008")
+					console.log(selected_year_data);
+				}
+				else if (paragraphID == "2009") {
+					selected_year_data = year2009
+					console.log("selected 2009")
+					console.log(selected_year_data);
+				}
+				else if (paragraphID == "2010") {
+					selected_year_data = year2010
+					console.log("selected 2010")
+					console.log(selected_year_data);
+				}
+				else if (paragraphID == "2011") {
+					selected_year_data = year2011
+					console.log("selected 2011")
+					console.log(selected_year_data);
+				}
+				else if (paragraphID == "2012") {
+					selected_year_data = year2012
+					console.log("selected 2012")
+					console.log(selected_year_data);
+				}
+
+				var projection = d3.geoMercator().fitSize([wMap, hMap], selected_year_data);
+				var path = d3.geoPath().projection(projection);
+
 				map.selectAll("path")
-				.attr("fill", function(d, i) {
-					//return "rgb(100,200,100)"
-					// only use data from chosen year
-					if (+d.properties.aar == Number(paragraphID)) {
+					.data(selected_year_data.features)
+					.attr("fill", function(d, i) {
 						// make array of three income values
 						var obj = [d.properties.pct_hoj_indkomst, d.properties.pct_middel_indkomst, d.properties.pct_lav_indkomst]
-						console.log(obj)
-
-
-
 						if (obj.reduce(add, 0) == 0) {
-							console.log("Array was zeros, no income data")
-							return "rgb(255, 204, 0)"
+							// fill path with white (can be changed)
+							return "rgb(255, 255, 255)"
 						}
+
 						else if(obj.reduce(add, 0) != 0) {
 							// find index of max value
 							var maxKey = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
 							// only plot color for chosen year:
-							console.log(+d.properties.aar)
-							console.log(maxKey)
-							//console.log(obj)
 							// if most prevalent area is high income:
 							if(maxKey == 0) {
-								console.log("Making a high income color")
+
 								total_zeros += 1
 								return "rgb(51, 204, 51)"
 							}
 							// if most prevalent is middle income:
 							if(maxKey == 1) {
-								console.log("Making a middle income color")
+
 								total_ones += 1
 								return "rgb(255, 204, 0)"
 							}
 							// if most prevalent area is low income:
 							if(maxKey == 2) {
-								console.log("Making a low income color")
+
 								total_twos += 1
 								return "rgb(255, 0, 0)"
 							}
 						}
-					}
-				});
-			}
+					});
+				}
 
 	// Function for updating the stacked area chart
 	function update_areachart(selected_rodenr) {
@@ -708,7 +796,7 @@
 				})])
 				.range([hArea - paddingArea, paddingArea])
 				.nice();
-	
+
 		yAxisArea = d3.axisRight()
 					.scale(yScaleArea)
 					.ticks(10);
@@ -771,7 +859,7 @@
 				.attr("fill", function(d) {
 					return "rgb(255, 0, 255)";
 				});
-				//.append("title") 
+				//.append("title")
 				//.text(function(d) {
 				//	return "Number of people: " + d3.format(",")(d);
 				//});
