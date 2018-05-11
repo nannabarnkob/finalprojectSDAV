@@ -471,7 +471,7 @@
 						.attr("class", "y axis")
 						.attr("transform", "translate(" + (wArea - paddingArea * 2) + ", 0)")
 						.call(yAxisArea);
-						// area chart done
+					// area chart done
 
 
 			// new selection on map related to updating histogram
@@ -500,7 +500,7 @@
 					clicked(d,json)
 				})
 
-			// When clicked update with new data sets
+		// When clicked update with new data sets
 	     d3.selectAll("button")
 	     	.on("click", function() {
 	      	var paragraphID = d3.select(this).attr("id");
@@ -522,7 +522,7 @@
 						update_map(paragraphID)
 					});
 
- 				// Function for updating the area chart
+ 			// Function for updating the map
 			function update_map(paragraphID) {
 
 				console.log("updating map")
@@ -571,6 +571,7 @@
 				});
 			}
 
+	// Function for updating the stacked area chart
 	function update_areachart(selected_rodenr) {
 
 		// 1. update data set based on rode_nr - could be done on nested data but now just matching criteria
@@ -592,7 +593,7 @@
 				antal_erh_faglig_udd: d.antal_erh_faglig_udd,
 				antal_kort_viderg_udd: d.antal_kort_viderg_udd,
 				antal_mellemlang_viderg_udd: d.antal_mellemlang_viderg_udd,
-		    antal_lang_viderg_udd: d.antal_lang_viderg_udd,
+		    	antal_lang_viderg_udd: d.antal_lang_viderg_udd,
 				antal_ingen_udd: d.antal_ingen_udd,
 				antal_under_udd: d.antal_under_udd
 		  };
@@ -606,17 +607,23 @@
 
 		var series = stack(education_data_subset);
 
-	// 2. redefine y axis domain
-		var yScaleArea = d3.scaleLinear()
+		// 2. redefine y axis domain
+		yScaleArea = d3.scaleLinear()
 				.domain([0,d3.max(education_data_subset, function(d) {
 					var sum = 0;
-					for (var i = 0; i<keys.length; i++) {
+					for (var i = 0; i < keys.length; i++) {
 						sum += +d[keys[i]];
 					};
 					return sum;
-				})]);
+				})])
+				.range([hArea - paddingArea, paddingArea])
+				.nice();
+	
+		yAxisArea = d3.axisRight()
+					.scale(yScaleArea)
+					.ticks(10);
 
-		var area = d3.area()
+		area = d3.area()
 					.x(function(d) {
 						return xScaleArea(d.data.aar);
 					})
@@ -627,31 +634,26 @@
 						return yScaleArea(d[1]);
 					});
 
-					// 3. update paths and y axis
+		// 3. update paths and y axis
 		svgArea.selectAll("path")
 			.data(series)
 			.transition()
-				.duration(2500)
-				.attr("d", area)
-				.delay(function(d, i) {
-									return i / series.length;
+			.duration(1300)
+			.attr("d", area)
+			.delay(function(d, i) {
+				return i / series.length;
 			})
 			.ease(d3.easeLinear)
 			.attr("fill",function(d,i) {
 				return d3.schemeCategory20[i];
 			});
-//			.append("title") // for tool tip
-//			.text(function(d) {
-//				return d.key;
-//			});
 
 
 			svgArea.select(".y.axis")
 				.transition()
-				.duration(1000)
-				.call(yAxisHist);
+				.duration(1300)
+				.call(yAxisArea);
 	}
-
 
 
 	// Function for updating the histogram using a simple array for input
@@ -664,32 +666,30 @@
 		svgHist.selectAll("rect")
 				.data(age_data_array)
 				.transition()
-				.delay(function(d, i) {
-					return i / age_data_array.length;
-				})
-				.duration(1000)
+				.duration(1300)
 				.ease(d3.easeLinear)
 				.attr("x", function(d, i) {
-				return xScaleHist(i);
+					return xScaleHist(i);
 				})
 				.attr("y", function(d) {
-				return yScaleHist(d) - paddingHist/2;
+					return yScaleHist(d) - paddingHist/2;
 				})
 				.attr("width", xScaleHist.bandwidth())
 				.attr("height", function(d, i) {
-				return hHist - yScaleHist(d);
+					return hHist - yScaleHist(d);
 				})
 				.attr("fill", function(d) {
-				return "rgb(255, 0, 255)";
-				})
-				.text(function(d) {
-					return "Number of people: " + d3.format(",")(d);
+					return "rgb(255, 0, 255)";
 				});
+				//.append("title") 
+				//.text(function(d) {
+				//	return "Number of people: " + d3.format(",")(d);
+				//});
 
 		// Update y axis
 		svgHist.select(".y.axis")
 					.transition()
-					.duration(1000)
+					.duration(1300)
 					.call(yAxisHist);
 	}
 
