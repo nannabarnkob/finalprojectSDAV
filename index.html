@@ -55,26 +55,22 @@
 			<p> Here you can move in time and space </p>
     <div class="viz"> </div>
 
-		<button class ="statistic btn default" id = "2008" > 2008 </button>
-		<button class ="statistic btn default" id = "2009" > 2009 </button>
-		<button class ="statistic btn default" id = "2010" > 2010 </button>
-		<button class ="statistic btn default" id = "2011" > 2011 </button>
-		<button class ="statistic btn default" id = "2012" > 2012 </button>
-		<button class ="statistic btn default" id = "2013" > 2013 </button>
-
     <script type="text/javascript">
-    // width and height for map of visualization
-    var wMap = 1000;
-    var hMap = 500;
+    	// width and height for map of visualization
+    	var wMap = 1000;
+    	var hMap = 500;
 		var wHist = 500;
 		var hHist = 400;
 		var wArea = 500;
 		var hArea = 400;
+		var wText = 1000;
+		var hText = 40;
 		var centered;
-    // define padding
-    var paddingMap = 20;
+    	// define padding
+    	var paddingMap = 20;
 		var paddingHist = 30;
 		var paddingArea = 20;
+		var paddingText = 5;
 
 		// Define key function
 		var key = function(d){
@@ -88,27 +84,84 @@
     var color = ['#64848E', '#DADED6', '#B6A693', '#9A9AA1', '#85818D']
 
     //Create SVG elements for our visualization
-    var svgMap = d3.select("div.viz")
-       			.append("svg")
-  					.attr("width", wMap)
-       		  .attr("height", hMap);
+    	var svgMap = d3.select("div.viz")
+       		.append("svg")
+  			.attr("width", wMap)
+       		.attr("height", hMap);
 
+		// New line
+		d3.select("div.viz")
+		.append("br");
+
+		// Create buttons
+		d3.select("div.viz")
+			.append("button")
+			.attr("class", "statistic btn default")
+			.attr("id", "2008")
+			.text("2008");
+
+		
+		d3.select("div.viz")
+			.append("button")
+			.attr("class", "statistic btn default")
+			.attr("id", "2009")
+			.text("2009");
+
+
+		d3.select("div.viz")
+			.append("button")
+			.attr("class", "statistic btn default")
+			.attr("id", "2010")
+			.text("2010");
+
+
+		d3.select("div.viz")
+			.append("button")
+			.attr("class", "statistic btn default")
+			.attr("id", "2011")
+			.text("2011");
+
+
+		d3.select("div.viz")
+			.append("button")
+			.attr("class", "statistic btn default")
+			.attr("id", "2012")
+			.text("2012");
+
+
+		d3.select("div.viz")
+			.append("button")
+			.attr("class", "statistic btn default")
+			.attr("id", "2013")
+			.text("2013");
+
+		var svgText = d3.select("div.viz")
+			.append("svg")
+			.attr("width", wText)
+			.attr("height", hText);
+
+		// New line
+		d3.select("div.viz")
+		.append("br");
+
+		// Create svg for the histogram
 		var svgHist = d3.select("div.viz")
 						.append("svg")
 						.attr("width", wHist + paddingHist)
 						.attr("height", hHist + paddingHist);
 
+		// Create svg for stacked area chart
 		var svgArea = d3.select("div.viz")
 						.append("svg")
 						.attr("width", wArea + paddingArea)
 						.attr("height", hArea + paddingArea);
 
 		//Create the map to which we append everything ...
-	  var map = svgMap.append("g")
+	  	var map = svgMap.append("g")
 	        .attr("id", "map");
 
 		//Create a new, invisible background rect to catch zoom events
-    map.append("rect")
+ 		map.append("rect")
           	.attr("x", 0)
     				.attr("y", 0)
             .attr("width", wMap)
@@ -246,7 +299,16 @@
 					d3.select(this).attr("stroke-width", "0.5")
 				}
 
-
+			// Create area and year text
+			svgText.append("text")
+                .attr("transform", "translate(" + (wText/2) + "," + hText/2 + ")")
+				.style("text-anchor", "middle")
+				.text("All areas, Year: 2013")
+				.attr("font-weight", "bold")
+				.attr("class", "header")
+				.attr("id", "headerHist")
+				.attr("font-size","25px");
+	
 
 			d3.csv("Sorted_data.csv",function(data) {
 				var sorted_data = data;
@@ -388,7 +450,7 @@
                         .text("Age distribution")
                         .attr("font-weight", "bold")
                         .attr("class", "header")
-												.attr("id", "headerHist")
+						.attr("id", "headerHist")
                         .attr("font-size","25px");
 
 					//});
@@ -471,6 +533,34 @@
 						.attr("class", "y axis")
 						.attr("transform", "translate(" + (wArea - paddingArea * 2) + ", 0)")
 						.call(yAxisArea);
+
+					// Create x axis label
+					svgArea.append("text")
+                      .attr("transform", "translate(" + (wArea/2 + paddingArea) + " , " + (hArea + paddingArea) + " )")
+                      .style("text-anchor", "middle")
+                      .text("Year")
+                      .attr("fill", "black")
+                      .attr("font-size","16px");
+
+					// Create y axis label
+					svgArea.append("text")
+						.attr("transform", "rotate(-90)")
+						.attr("x", -hArea/2)
+						.attr("y", wArea + paddingArea + paddingArea/2)
+						.style("text-anchor", "middle")
+						.text("Number")
+						.attr("fill", "black")
+						.attr("font-size","16px");
+
+					// Create header
+					svgArea.append("text")
+                        .attr("transform", "translate(" + (wArea/2 + paddingArea) + "," + paddingArea/2 + ")")
+                        .style("text-anchor", "middle")
+                        .text("Educational level")
+                        .attr("font-weight", "bold")
+                        .attr("class", "header")
+						.attr("id", "headerHist")
+                        .attr("font-size","25px");
 					// area chart done
 
 
@@ -486,7 +576,7 @@
 					var selected_rodenr = d3.select(this).attr("id");
 					var selected_name = d3.select(this).attr("text");
 					// update title according to selected area:
-					svgHist.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
+					svgText.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
 
 					// collect data for histogram
 					var age_distribution_data = [d.properties.alder_antal_0_5, d.properties.alder_antal_6_17, d.properties.alder_antal_18_29, d.properties.alder_antal_30_39, d.properties.alder_antal_40_49,d.properties.alder_antal_50_64, d.properties.alder_antal_over_65]
@@ -504,7 +594,7 @@
 	     d3.selectAll("button")
 	     	.on("click", function() {
 	      	var paragraphID = d3.select(this).attr("id");
-					svgHist.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
+					svgText.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
 					year_observation = [];
 
 					age_data.forEach(function(d) {
