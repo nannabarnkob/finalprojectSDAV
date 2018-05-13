@@ -50,6 +50,10 @@
 			}
 
 			.active {
+				background-color: yellow;
+			}
+
+			.active {
 				fill: yellow;
 			}
 	}
@@ -68,8 +72,8 @@
   	$( "#337" ).select();
 	});
     	// width and height for map of visualization
-    	var wMap = 1000;
-    	var hMap = 500;
+    var wMap = 1000;
+    var hMap = 500;
 		var wHist = 500;
 		var hHist = 400;
 		var wArea = 500;
@@ -77,8 +81,9 @@
 		var wText = 1000;
 		var hText = 40;
 		var centered;
-    	// define padding
-    	var paddingMap = 20;
+
+		// define padding
+    var paddingMap = 20;
 		var paddingHist = 30;
 		var paddingArea = 20;
 		var paddingText = 5;
@@ -107,6 +112,8 @@
 		// Create buttons
 		d3.select("div.viz")
 		.append("div")
+		.attr("width", wMap)
+		.attr("height", hMap)
 		.attr("align","center")
 		.attr("id","buttons")
 		.attr("class", "buttons");
@@ -194,8 +201,11 @@
 						.on("click",clicked);
 
 		// define starting year:
-		var paragraphID = "2013"
+		var paragraphID = "2008" // starting year is actually defined in the creation of the map
 		var selected_name = "All"
+		var last_chosen_year = paragraphID
+		var all_areas_toggled = true;
+		d3.select("#AllAreas").classed("active", true)
 
 		function clicked(d,json) {
 			var projection = d3.geoMercator().fitSize([wMap, hMap], json);
@@ -210,11 +220,14 @@
 				k = 3;
 				centered = d;
 			}
+			// zoom out
 			else {
-				x = (wMap-200) / 2;
+				x = (wMap) / 2;
 				y = hMap / 2;
 				k = 1;
 				centered = null;
+				all_areas_toggled = true;
+				d3.select("#AllAreas").classed("active", true)
 			}
 
 			map.selectAll("path")
@@ -222,7 +235,7 @@
 
 			map.transition()
 			 .duration(700)
-			 .attr("transform", "translate(" + (wMap-200) / 2 + "," + hMap / 2 + ")scale(" + k + ")translate(" + -x + "," + -y  + ")")
+			 .attr("transform", "translate(" + (wMap) / 2 + "," + hMap / 2 + ")scale(" + k + ")translate(" + -x + "," + -y  + ")")
 			 .attr("stroke-width", 1.5 / k + "px");
 		 }
 
@@ -235,6 +248,27 @@
 		 		 var temp2014 = 0
 
 		 		 d3.json("socio_data_kbh.geojson", function(json) {
+
+				// sort json
+				function propSort(props) {
+				 	 if (!props instanceof Array) props = props.split(",");
+				 	 return function sort(a, b) {
+				 		 var p;
+				 		 a = a.properties;
+				 		 b = b.properties;
+				 		 for (var i = 0; i < props.length; i++) {
+				 			 p = props;
+				 			 if (typeof a[p] === "undefined") return -1;
+				 			 if (a[p] < b[p]){
+				 				 return -1;}
+				 			 if (a[p] > b[p]){
+				 				 return 1;}
+				 		 }
+				 		 return 0;
+				 	 };
+				  }
+
+					json.features.sort(propSort("rode_nr"))
 
 		 			 console.log(json)
 		 			 var year2008 = JSON.parse(JSON.stringify(json))
@@ -292,6 +326,14 @@
 		 				 temp2013++
 		 				 temp2014++
 		 			 }
+					 var wrong_places = 0
+					 for(k = 0; k < year2012.features.length; k++){
+						 if (k != (year2012.features[k].properties.rode_nr -1)) {
+							 wrong_places += 1
+							 year2012.features.splice(k,0,year2011.features[k])
+						 }
+					 }
+					 console.log(wrong_places)
 
 		 			 var selected_year_data;
 
@@ -300,7 +342,7 @@
 		 			var path = d3.geoPath().projection(projection);
 
 			// array for row with one year observation for creating over all histogram
-			var year_observation = [];
+			var year_age_observation = [];
 			var total_zeros = 0;
 			var total_ones = 0;
 			var total_twos = 0;
@@ -324,32 +366,27 @@
 				.attr("fill", function(d, i) {
 					// make array of three income values
 					var obj = [d.properties.pct_hoj_indkomst, d.properties.pct_middel_indkomst, d.properties.pct_lav_indkomst]
+					// check for missing data
 					if (obj.reduce(add, 0) == 0) {
-						// fill path with white (can be changed)
-						return "#d3d3d3"
+						return "#d3d3d3"  // fill path with grey
 					}
-
 					else if(obj.reduce(add, 0) != 0) {
 						// find index of max value
 						var maxKey = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
-						// only plot color for chosen year:
 						// if most prevalent area is high income:
 						if(maxKey == 0) {
-
 							total_zeros += 1
-							return "rgb(51, 204, 51)"
+							return "rgb(51, 204, 51)" // green
 						}
 						// if most prevalent is middle income:
 						if(maxKey == 1) {
-
 							total_ones += 1
-							return "rgb(255, 204, 0)"
+							return "rgb(255, 204, 0)" // orange
 						}
 						// if most prevalent area is low income:
 						if(maxKey == 2) {
-
 							total_twos += 1
-							return "rgb(255, 0, 0)"
+							return "rgb(255, 0, 0)" // grey
 						}
 					}
 				})
@@ -376,7 +413,7 @@
 			svgText.append("text")
                 .attr("transform", "translate(" + (wText/2) + "," + hText/2 + ")")
 				.style("text-anchor", "middle")
-				.text("All areas, Year: 2013")
+				.text("Area: " + selected_name + ", year " + paragraphID)
 				.attr("font-weight", "bold")
 				.attr("class", "header")
 				.attr("id", "headerHist")
@@ -415,12 +452,10 @@
 
 			// for showing something when loading the page:
 
-			// Load the age data
+			// Load the aggreagetd age data
 			d3.csv("Aggregated_data.csv", function(data) {
 				age_data = data;
-
-				//console.log('this is the aggregated data:')
-				//console.log(data)
+				year_observation = []
 				age_data.forEach(function(d) {
 						if (+d.aar == Number(paragraphID)) {
 							year_observation.push(+d["alder_antal_0_5"])
@@ -432,11 +467,6 @@
 							year_observation.push(+d["alder_antal_over_65"])
 						};
 					});
-					console.log("This is the year observation array:")
-					console.log(year_observation);
-					console.log(d3.range(year_observation.length))
-					console.log("max:")
-					console.log(d3.max(d3.values(year_observation)))
 
 			// Define xscale for the histogram
 			var xScaleHist = d3.scaleBand()
@@ -632,7 +662,7 @@
                         .text("Educational level")
                         .attr("font-weight", "bold")
                         .attr("class", "header")
-						.attr("id", "headerHist")
+												.attr("id", "headerHist")
                         .attr("font-size","25px");
 					// area chart done
 
@@ -643,6 +673,10 @@
 				.on("mouseout", mouseOutHandler)
 				.on("click", function(d) {
 					console.log(d)
+					all_areas_toggled = false
+					d3.select("#AllAreas").classed("active", false)
+
+					console.log("unselected all areas")
 					// highlight selected area:
 
 					var selected_rodenr = d3.select(this).attr("id");
@@ -674,62 +708,114 @@
 		d3.selectAll("button")
  		.on("click", function() {
  			var getParagraphID = d3.select(this).attr("id");
- 			// if selected option is all areas, update using the aggregated data and the previously chosen year
+
+			// if selected option is all areas, update using the aggregated data and the previously chosen year
  			if (getParagraphID == "AllAreas") {
+				all_areas_toggled = true;
 				console.log("Viewing data for all areas, updating using",last_chosen_year)
-				// update using aggregated data
+
+				if (all_areas_toggled) {
+						d3.select("#AllAreas").classed("active", true)
+
+						// zoom out:
+						var x,y,k;
+						x = (wMap) / 2;
+						y = hMap / 2;
+						k = 1;
+						centered = null;
+
+						map.selectAll("path")
+						 .classed("active", centered && function(d) { return d === centered; });
+
+						map.transition()
+						 .duration(700)
+						 .attr("transform", "translate(" + (wMap) / 2 + "," + hMap / 2 + ")scale(" + k + ")translate(" + -x + "," + -y  + ")")
+						 .attr("stroke-width", 1.5 / k + "px");
+					 }
+
+				else {
+					d3.select("#AllAreas").classed("active", false)
+				}
+
+				console.log("all areas showing:", all_areas_toggled)
+
+				// update using aggregated year data for age distribution
  				paragraphID = last_chosen_year
  				selected_name = "All"
 				year_age_observation = [];
+
  				age_data.forEach(function(d) {
  						if (+d.aar == Number(paragraphID)) {
- 							year_observation.push(+d["alder_antal_0_5"])
- 							year_observation.push(+d["alder_antal_6_17"])
- 							year_observation.push(+d["alder_antal_18_29"])
- 							year_observation.push(+d["alder_antal_30_39"])
- 							year_observation.push(+d["alder_antal_40_49"])
- 							year_observation.push(+d["alder_antal_50_64"])
- 							year_observation.push(+d["alder_antal_over_65"])
+ 							year_age_observation.push(+d["alder_antal_0_5"])
+ 							year_age_observation.push(+d["alder_antal_6_17"])
+ 							year_age_observation.push(+d["alder_antal_18_29"])
+ 							year_age_observation.push(+d["alder_antal_30_39"])
+ 							year_age_observation.push(+d["alder_antal_40_49"])
+ 							year_age_observation.push(+d["alder_antal_50_64"])
+ 							year_age_observation.push(+d["alder_antal_over_65"])
  						};
  					});
+					svgText.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
  					update_histogram(year_age_observation);
 
  			}
+			// Case for paragraphID is a year
  			else {
  				paragraphID = getParagraphID
-				console.log("received year for updating data", paragraphID)
+				console.log("Received year for updating data", paragraphID)
  				last_chosen_year = paragraphID
-				// use selected_rodenr to find data to plot
+				console.log("All area toggled status: ", all_areas_toggled)
 
-				// select data for selected area based on the class 'active' (also determines yellow color)
-				var age_data_selected_area = d3.selectAll(".active").data()
-				console.log("'Raw data' gotten from map:", age_data_selected_area)
+				// update the map based on the chosen year
+				update_map(paragraphID)
 
-				var age_selection = age_data_selected_area[0].properties
-				var age_distribution_area = [age_selection.alder_antal_0_5, age_selection.alder_antal_6_17, age_selection.alder_antal_18_29, age_selection.alder_antal_30_39, age_selection.alder_antal_40_49,age_selection.alder_antal_50_64, age_selection.alder_antal_over_65]
-				//[d.properties.alder_antal_0_5, d.properties.alder_antal_6_17, d.properties.alder_antal_18_29, d.properties.alder_antal_30_39, d.properties.alder_antal_40_49,d.properties.alder_antal_50_64, d.properties.alder_antal_over_65]
+				// Two cases: either update the histogram based on the active area or all aggregated data
+				if (all_areas_toggled) {
+					console.log("Updating histogram with full data set and year", paragraphID)
+					selected_name = "All"
+					year_age_observation = [];
 
-				//console.log("active data:",datatest[0])
+	 				age_data.forEach(function(d) {
+	 						if (+d.aar == Number(paragraphID)) {
+	 							year_age_observation.push(+d["alder_antal_0_5"])
+	 							year_age_observation.push(+d["alder_antal_6_17"])
+	 							year_age_observation.push(+d["alder_antal_18_29"])
+	 							year_age_observation.push(+d["alder_antal_30_39"])
+	 							year_age_observation.push(+d["alder_antal_40_49"])
+	 							year_age_observation.push(+d["alder_antal_50_64"])
+	 							year_age_observation.push(+d["alder_antal_over_65"])
+	 						};
+	 					});
+						// update header and histogram
+						svgText.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
+	 					update_histogram(year_age_observation);
+				}
 
-				//console.log("active data:",datatest[0].properties.alder_antal_0_5)
-				console.log("active data for histogram:",age_distribution_area)
-				update_histogram(age_distribution_area)
+				else {
+					// select data for selected area based on the class 'active' (also determines yellow color)
+					var age_data_selected_area = d3.selectAll(".active").data()
+					console.log("'Raw data' gotten from map:", age_data_selected_area)
 
+					var age_selection = age_data_selected_area[0].properties
+					// find name for updating header
+					selected_name = age_selection.rodenavn
+					var age_distribution_area = [age_selection.alder_antal_0_5, age_selection.alder_antal_6_17, age_selection.alder_antal_18_29, age_selection.alder_antal_30_39, age_selection.alder_antal_40_49,age_selection.alder_antal_50_64, age_selection.alder_antal_over_65]
 
+					console.log("Active data for histogram:", age_distribution_area)
+					// update header and histogram
+					svgText.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
+					update_histogram(age_distribution_area)
+				}
  			}
- 			// currently take aggregated age data to show, this should only happen if viewing all areas
- 			update_map(paragraphID)
+
  			});
 
 
 
  			// Function for updating the map
 			function update_map(paragraphID) {
-
-
-				console.log("updating map")
-
-
+				console.log("Updating map")
+				// Select data set based on paragraph ID
 				if (paragraphID == "2008") {
 					selected_year_data = year2008
 					console.log("selected 2008")
@@ -764,37 +850,33 @@
 				var projection = d3.geoMercator().fitSize([wMap, hMap], selected_year_data);
 				var path = d3.geoPath().projection(projection);
 
+				// Update map colors
 				map.selectAll("path")
 					.data(selected_year_data.features)
 					.attr("fill", function(d, i) {
 						// make array of three income values
 						var obj = [d.properties.pct_hoj_indkomst, d.properties.pct_middel_indkomst, d.properties.pct_lav_indkomst]
+						// check for missing data
 						if (obj.reduce(add, 0) == 0) {
-							// fill path with white (can be changed)
-							return "rgb(255, 255, 255)"
+							return "#d3d3d3" // fill path with grey
 						}
-
 						else if(obj.reduce(add, 0) != 0) {
-							// find index of max value
+							// find index of max value, determines case for if statement
 							var maxKey = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
-							// only plot color for chosen year:
 							// if most prevalent area is high income:
 							if(maxKey == 0) {
-
 								total_zeros += 1
-								return "rgb(51, 204, 51)"
+								return "rgb(51, 204, 51)" // green
 							}
 							// if most prevalent is middle income:
 							if(maxKey == 1) {
-
 								total_ones += 1
-								return "rgb(255, 204, 0)"
+								return "rgb(255, 204, 0)" // orange
 							}
 							// if most prevalent area is low income:
 							if(maxKey == 2) {
-
 								total_twos += 1
-								return "rgb(255, 0, 0)"
+								return "rgb(255, 0, 0)" // red
 							}
 						}
 					});
@@ -803,17 +885,17 @@
 	// Function for updating the stacked area chart
 	function update_areachart(selected_rodenr) {
 
-		// 1. update data set based on rode_nr - could be done on nested data but now just matching criteria
+		// 1. Update data set based on rode_nr
 		var education_data_rodenr = []
-		console.log("executing update areachart")
+		console.log("Executing update areachart")
 
 		sorted_data.forEach(d => {
 			if (+d.rode_nr == selected_rodenr) {
 				education_data_rodenr.push(d);
 			}
 		})
-		console.log("education data for rodenr: " + selected_rodenr)
 
+		console.log("Education data for rodenr: " + selected_rodenr)
 
 		var education_data_subset = education_data_rodenr.map(function(d,i) {
 		  return {
@@ -828,13 +910,7 @@
 		  };
 		});
 
-		if (education_data_rodenr.slice(1, this.length+1).reduce(add, 0) == 0) {
-
-			// fill path with white (can be changed)
-			console.log("No educational data")
-		}
-
-		console.log(education_data_subset)
+		console.log("Education data for plotting:", education_data_subset)
 		var keys = Object.getOwnPropertyNames(education_data_subset[0]);
 		// remove the first and last column
 		keys.shift();
@@ -842,7 +918,7 @@
 
 		var series = stack(education_data_subset);
 
-		// 2. redefine y axis domain
+		// 2. Redefine y axis domain
 		yScaleArea = d3.scaleLinear()
 				.domain([0,d3.max(education_data_subset, function(d) {
 					var sum = 0;
@@ -869,7 +945,7 @@
 						return yScaleArea(d[1]);
 					});
 
-		// 3. update paths and y axis
+		// 3. Update paths and y axis
 		svgArea.selectAll("path")
 			.data(series)
 			.transition()
@@ -893,6 +969,7 @@
 
 	// Function for updating the histogram using a simple array for input
 	function update_histogram(age_data_array) {
+		console.log("Updating the histogram with", age_data_array)
 
 		// update the y scale
 		yScaleHist.domain([0, d3.max(d3.values(age_data_array))]);
@@ -927,12 +1004,7 @@
 					.duration(1300)
 					.call(yAxisHist);
 	}
-
-
-
 	});
-
-
 							});
 					});
 			});
