@@ -1,0 +1,21 @@
+var fs = require('fs');
+var turfCentroid = require('turf-centroid');
+var geojson = require('C:\Users\Thor\Documents\finalprojectSDAV-master\finalprojectSDAV\socio_data_kbh.json');
+
+var result = {
+    "type": "FeatureCollection",
+    "features": []
+};
+
+for (var i = 0; i < json.features.length; i++) {
+    result.features.push(
+        {
+            "type": "Feature",
+            "properties": {"id": json.features[i].properties.id},
+            "geometry": turfCentroid(json.features[i]).geometry
+        }
+    );
+}
+
+
+fs.writeFile(path.join("./public/data", `labels.geojson.json`), JSON.stringify(result, null, '  '));
