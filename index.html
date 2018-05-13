@@ -4,6 +4,7 @@
     <title>Final project: Social Data Analysis and Visualization</title>
     <script src="https://d3js.org/d3.v4.min.js"></script>
 		<script src='https://api.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js'></script>
+		<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 		<link rel="stylesheet" href="style.css">
   </head>
 	<style>
@@ -47,6 +48,10 @@
 			.default:hover {
 			    background: #e7e7e7;
 			}
+
+			.active {
+				fill: yellow;
+			}
 	}
 	</style>
   <body>
@@ -56,6 +61,12 @@
     <div class="viz"> </div>
 
     <script type="text/javascript">
+		$( "#337" ).select(function() {
+  		alert( "Handler for .select() called." );
+		});
+		$( "#337").click(function() {
+  	$( "#337" ).select();
+	});
     	// width and height for map of visualization
     	var wMap = 1000;
     	var hMap = 500;
@@ -95,48 +106,61 @@
 
 		// Create buttons
 		d3.select("div.viz")
+		.append("div")
+		.attr("align","center")
+		.attr("id","buttons")
+		.attr("class", "buttons");
+
+		d3.select("div#buttons")
 			.append("button")
 			.attr("class", "statistic btn default")
 			.attr("id", "2008")
 			.text("2008");
 
 
-		d3.select("div.viz")
-			.append("button")
+			d3.select("div#buttons")
+				.append("button")
 			.attr("class", "statistic btn default")
 			.attr("id", "2009")
 			.text("2009");
 
 
-		d3.select("div.viz")
-			.append("button")
+			d3.select("div#buttons")
+				.append("button")
 			.attr("class", "statistic btn default")
 			.attr("id", "2010")
 			.text("2010");
 
 
-		d3.select("div.viz")
-			.append("button")
+			d3.select("div#buttons")
+				.append("button")
 			.attr("class", "statistic btn default")
 			.attr("id", "2011")
 			.text("2011");
 
 
-		d3.select("div.viz")
-			.append("button")
+			d3.select("div#buttons")
+				.append("button")
 			.attr("class", "statistic btn default")
 			.attr("id", "2012")
 			.text("2012");
 
 
-		d3.select("div.viz")
-			.append("button")
+			d3.select("div#buttons")
+				.append("button")
 			.attr("class", "statistic btn default")
 			.attr("id", "2013")
 			.text("2013");
 
+			d3.select("div#buttons")
+				.append("button")
+				.attr("class", "statistic btn default")
+				.attr("id", "AllAreas")
+				.text("View all areas");
+
 		var svgText = d3.select("div.viz")
 			.append("svg")
+			.attr("text-align","center")
 			.attr("width", wText)
 			.attr("height", hText);
 
@@ -302,7 +326,7 @@
 					var obj = [d.properties.pct_hoj_indkomst, d.properties.pct_middel_indkomst, d.properties.pct_lav_indkomst]
 					if (obj.reduce(add, 0) == 0) {
 						// fill path with white (can be changed)
-						return "rgb(255, 255, 255)"
+						return "#d3d3d3"
 					}
 
 					else if(obj.reduce(add, 0) != 0) {
@@ -620,7 +644,6 @@
 				.on("click", function(d) {
 					console.log(d)
 					// highlight selected area:
-					d3.select(this).attr("fill", "rgb(200, 0, 100)")
 
 					var selected_rodenr = d3.select(this).attr("id");
 					var selected_name = d3.select(this).attr("text");
@@ -633,7 +656,15 @@
 					console.log(age_distribution_data)
 					console.log(selected_rodenr)
 
-					update_histogram(age_distribution_data, yScaleHist, svgHist);
+					// test for missing data before updating
+					if (age_distribution_data.reduce(add, 0) == 0) {
+						// fill path with white (can be changed)
+						console.log("no age distribution data")
+					}
+					else {
+						update_histogram(age_distribution_data);
+					}
+
 					update_areachart(selected_rodenr)
 					// add zoom / panning behavior
 					clicked(d,json)
@@ -645,9 +676,11 @@
  			var getParagraphID = d3.select(this).attr("id");
  			// if selected option is all areas, update using the aggregated data and the previously chosen year
  			if (getParagraphID == "AllAreas") {
- 				// update using aggregated data
+				console.log("Viewing data for all areas, updating using",last_chosen_year)
+				// update using aggregated data
  				paragraphID = last_chosen_year
  				selected_name = "All"
+				year_age_observation = [];
  				age_data.forEach(function(d) {
  						if (+d.aar == Number(paragraphID)) {
  							year_observation.push(+d["alder_antal_0_5"])
@@ -659,20 +692,33 @@
  							year_observation.push(+d["alder_antal_over_65"])
  						};
  					});
- 					update_histogram(year_observation);
+ 					update_histogram(year_age_observation);
 
  			}
  			else {
  				paragraphID = getParagraphID
+				console.log("received year for updating data", paragraphID)
  				last_chosen_year = paragraphID
+				// use selected_rodenr to find data to plot
+
+				// select data for selected area based on the class 'active' (also determines yellow color)
+				var age_data_selected_area = d3.selectAll(".active").data()
+				console.log("'Raw data' gotten from map:", age_data_selected_area)
+
+				var age_selection = age_data_selected_area[0].properties
+				var age_distribution_area = [age_selection.alder_antal_0_5, age_selection.alder_antal_6_17, age_selection.alder_antal_18_29, age_selection.alder_antal_30_39, age_selection.alder_antal_40_49,age_selection.alder_antal_50_64, age_selection.alder_antal_over_65]
+				//[d.properties.alder_antal_0_5, d.properties.alder_antal_6_17, d.properties.alder_antal_18_29, d.properties.alder_antal_30_39, d.properties.alder_antal_40_49,d.properties.alder_antal_50_64, d.properties.alder_antal_over_65]
+
+				//console.log("active data:",datatest[0])
+
+				//console.log("active data:",datatest[0].properties.alder_antal_0_5)
+				console.log("active data for histogram:",age_distribution_area)
+				update_histogram(age_distribution_area)
+
+
  			}
-
- 			svgHist.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
- 			year_observation = [];
-
  			// currently take aggregated age data to show, this should only happen if viewing all areas
-
- 				update_map(paragraphID)
+ 			update_map(paragraphID)
  			});
 
 
@@ -707,6 +753,11 @@
 				else if (paragraphID == "2012") {
 					selected_year_data = year2012
 					console.log("selected 2012")
+					console.log(selected_year_data);
+				}
+				else if (paragraphID == "2013") {
+					selected_year_data = year2013
+					console.log("selected 2013")
 					console.log(selected_year_data);
 				}
 
@@ -771,11 +822,17 @@
 				antal_erh_faglig_udd: d.antal_erh_faglig_udd,
 				antal_kort_viderg_udd: d.antal_kort_viderg_udd,
 				antal_mellemlang_viderg_udd: d.antal_mellemlang_viderg_udd,
-		    	antal_lang_viderg_udd: d.antal_lang_viderg_udd,
+		    antal_lang_viderg_udd: d.antal_lang_viderg_udd,
 				antal_ingen_udd: d.antal_ingen_udd,
 				antal_under_udd: d.antal_under_udd
 		  };
 		});
+
+		if (education_data_rodenr.slice(1, this.length+1).reduce(add, 0) == 0) {
+
+			// fill path with white (can be changed)
+			console.log("No educational data")
+		}
 
 		console.log(education_data_subset)
 		var keys = Object.getOwnPropertyNames(education_data_subset[0]);
