@@ -47,6 +47,9 @@
 			.default:hover {
 			    background: #e7e7e7;
 			}
+			.active {
+				fill: yellow;
+			}
 	}
 	</style>
   <body>
@@ -61,6 +64,7 @@
 		<button class ="statistic btn default" id = "2011" > 2011 </button>
 		<button class ="statistic btn default" id = "2012" > 2012 </button>
 		<button class ="statistic btn default" id = "2013" > 2013 </button>
+		<button class ="statistic btn default" id = "AllAreas"> View all areas </button>
 
     <script type="text/javascript">
     // width and height for map of visualization
@@ -117,7 +121,8 @@
 						.on("click",clicked);
 
 		// define starting year:
-		var paragraphID = "2013"
+		var paragraphID = "2008"
+		var last_chosen_year = "2013"
 		var selected_name = "All"
 
 		function clicked(d,json) {
@@ -149,33 +154,94 @@
 			 .attr("stroke-width", 1.5 / k + "px");
 		 }
 
+		var temp2008 = 0
+ 		var temp2009 = 0;
+ 		var temp2010 = 0;
+ 		var temp2011 = 0;
+ 		var temp2012 = 0;
+ 		var temp2013 = 0;
+ 		var temp2014 = 0;
+
     d3.json("socio_data_kbh.geojson", function(json) {
 
 			console.log(json)
+			var year2008 = JSON.parse(JSON.stringify(json))
+			var year2009 = JSON.parse(JSON.stringify(json))
+			var year2010 = JSON.parse(JSON.stringify(json))
+			var year2011 = JSON.parse(JSON.stringify(json))
+			var year2012 = JSON.parse(JSON.stringify(json))
+			var year2013 = JSON.parse(JSON.stringify(json))
+			var year2014 = JSON.parse(JSON.stringify(json))
 
-			var projection = d3.geoMercator().fitSize([wMap, hMap], json);
+			var temp2008 = 1
+			var temp2009 = 1
+			var temp2010 = 0
+			var temp2011 = 0
+			var temp2012 = 0
+			var temp2013 = 0
+			var temp2014 = 0
+
+			var L = json.features.length
+			for(k = 0; k < L; k++) {
+				var d = json.features[k]
+				if (+d.properties.aar != 2008) {
+					year2008.features.splice(temp2008,1)
+					temp2008--
+				}
+				if (+d.properties.aar != 2009) {
+					year2009.features.splice(temp2009,1)
+					temp2009--
+				}
+				if (+d.properties.aar != 2010) {
+					year2010.features.splice(temp2010,1)
+					temp2010--
+				}
+				if (+d.properties.aar != 2011) {
+					year2011.features.splice(temp2011,1)
+					temp2011--
+				}
+				if (+d.properties.aar != 2012) {
+					year2012.features.splice(temp2012,1)
+					temp2012--
+				}
+				if (+d.properties.aar != 2013) {
+					year2013.features.splice(temp2013,1)
+					temp2013--
+				}
+				if (+d.properties.aar != 2014) {
+					year2014.features.splice(temp2014,1)
+					temp2014--
+				}
+				temp2008++
+				temp2009++
+				temp2010++
+				temp2011++
+				temp2012++
+				temp2013++
+				temp2014++
+			}
+
+			console.log(year2009)
+
+
+			var projection = d3.geoMercator().fitSize([wMap, hMap], year2009);
 			var path = d3.geoPath().projection(projection);
 
 			// for adding some zooming behavior
-	/*
+
 			// Make arrays for the different years
-			var aar2008 = [];
-			var aar2009 = [];
-			var aar2010 = [];
-			var aar2011 = [];
-			var aar2012 = [];
-			var aar2013 = [];
-			var aar2014 = [];
-*/
+
+
 			// array for row with one year observation for creating over all histogram
 			var year_observation = [];
 			var total_zeros = 0;
 			var total_ones = 0;
 			var total_twos = 0;
 			// draw the map using the json file
+			console.log("start")
 			map.append("g")
-				 .selectAll("path")
-				.data(json.features)
+				.selectAll("path")
+				.data(year2009.features)
 				.enter()
 				.append("path")
 				.attr("d", path)
@@ -190,42 +256,41 @@
 				.attr("fill", function(d, i) {
 					//return "rgb(100,200,100)"
 					// only use data from chosen year
-					if (+d.properties.aar == Number(paragraphID)) {
+
+
 						// make array of three income values
 						var obj = [d.properties.pct_hoj_indkomst, d.properties.pct_middel_indkomst, d.properties.pct_lav_indkomst]
-						console.log(obj)
+
 
 						if (obj.reduce(add, 0) == 0) {
-							console.log("Array was zeros, no income data")
-							return "rgb(255, 204, 0)"
+
+							return "rgb(255, 255, 255)"
 						}
 						else if(obj.reduce(add, 0) != 0) {
 							// find index of max value
 							var maxKey = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
 							// only plot color for chosen year:
-							console.log(+d.properties.aar)
-							console.log(maxKey)
+
 							//console.log(obj)
 							// if most prevalent area is high income:
 							if(maxKey == 0) {
-								console.log("Making a high income color")
+
 								total_zeros += 1
 								return "rgb(51, 204, 51)"
 							}
 							// if most prevalent is middle income:
 							if(maxKey == 1) {
-								console.log("Making a middle income color")
+
 								total_ones += 1
 								return "rgb(255, 204, 0)"
 							}
 							// if most prevalent area is low income:
 							if(maxKey == 2) {
-								console.log("Making a low income color")
+
 								total_twos += 1
 								return "rgb(255, 0, 0)"
 							}
 						}
-					}
 				})
 				.on("click",clicked)
 				.append("title")
@@ -235,7 +300,6 @@
 
 
 				// log how many low- middle high class areas there should be
-				console.log(total_zeros,total_ones,total_twos)
 
 				// functions for handling what happens when you hover on the map
 				function mouseOverHandler(d, i) {
@@ -483,18 +547,19 @@
 					// highlight selected area:
 					d3.select(this).attr("fill", "rgb(200, 0, 100)")
 
-					var selected_rodenr = d3.select(this).attr("id");
-					var selected_name = d3.select(this).attr("text");
+					selected_rodenr = d3.select(this).attr("id");
+					selected_name = d3.select(this).attr("text");
 					// update title according to selected area:
 					svgHist.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
 
 					// collect data for histogram
+
 					var age_distribution_data = [d.properties.alder_antal_0_5, d.properties.alder_antal_6_17, d.properties.alder_antal_18_29, d.properties.alder_antal_30_39, d.properties.alder_antal_40_49,d.properties.alder_antal_50_64, d.properties.alder_antal_over_65]
 
 					console.log(age_distribution_data)
 					console.log(selected_rodenr)
 
-					update_histogram(age_distribution_data, yScaleHist, svgHist);
+					update_histogram(age_distribution_data);
 					update_areachart(selected_rodenr)
 					// add zoom / panning behavior
 					clicked(d,json)
@@ -502,23 +567,37 @@
 
 			// When clicked update with new data sets
 	     d3.selectAll("button")
-	     	.on("click", function() {
-	      	var paragraphID = d3.select(this).attr("id");
+	     	.on("click", function(){
+	      	var getParagraphID = d3.select(this).attr("id");
+					// if selected option is all areas, update using the aggregated data and the previously chosen year
+					if (getParagraphID == "AllAreas") {
+						// update using aggregated data
+						paragraphID = last_chosen_year
+						selected_name = "All"
+						age_data.forEach(function(d) {
+								if (+d.aar == Number(paragraphID)) {
+									year_observation.push(+d["alder_antal_0_5"])
+									year_observation.push(+d["alder_antal_6_17"])
+									year_observation.push(+d["alder_antal_18_29"])
+									year_observation.push(+d["alder_antal_30_39"])
+									year_observation.push(+d["alder_antal_40_49"])
+									year_observation.push(+d["alder_antal_50_64"])
+									year_observation.push(+d["alder_antal_over_65"])
+								};
+							});
+							update_histogram(year_observation);
+
+					}
+					else {
+						paragraphID = getParagraphID
+						last_chosen_year = paragraphID
+					}
+
 					svgHist.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
 					year_observation = [];
 
-					age_data.forEach(function(d) {
-							if (+d.aar == Number(paragraphID)) {
-								year_observation.push(+d["alder_antal_0_5"])
-								year_observation.push(+d["alder_antal_6_17"])
-								year_observation.push(+d["alder_antal_18_29"])
-								year_observation.push(+d["alder_antal_30_39"])
-								year_observation.push(+d["alder_antal_40_49"])
-								year_observation.push(+d["alder_antal_50_64"])
-								year_observation.push(+d["alder_antal_over_65"])
-							};
-						});
-						update_histogram(year_observation);
+					// currently take aggregated age data to show, this should only happen if viewing all areas
+
 						update_map(paragraphID)
 					});
 
