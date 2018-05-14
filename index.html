@@ -29,7 +29,9 @@
 				transition: all 0.25s;
 			}
 
-			rect:hover {
+			.histogram:hover {
+				stroke-width: 2px;
+				stroke: white;
 				fill: blue;
 			}
 
@@ -65,7 +67,7 @@
 			}
 */
 			.active {
-				stroke-width: 2px;
+				stroke-width: 3px;
 				stroke: white;
 			}
 			.areaActive {
@@ -82,18 +84,6 @@
 			  border-radius: 2px;
 			}
 
-			/* Creates a small triangle extender for the tooltip */
-			.d3-tip:after {
-			  box-sizing: border-box;
-			  display: inline;
-			  font-size: 10px;
-			  width: 100%;
-			  line-height: 1;
-			  color: rgba(0, 0, 0, 0.8);
-			  content: "\25BC";
-			  position: absolute;
-			  text-align: center;
-			}
 
 	}
 	</style>
@@ -156,7 +146,7 @@
 			.attr('class', 'd3-tip')
 			.offset([-10, 0])
 			.html(function(d) {
-				return "Number of people:" + d3.format(",")(d);
+				return "Number of people: " + d3.format(",")(d);
 			});
 
 		// define tooltip for map
@@ -182,7 +172,7 @@
 			.html(function(d, i) {
 				return education_explain[i];
 			});
-	
+
 
     //Create SVG elements for our visualization
     	var svgMap = d3.select("div.viz")
@@ -194,8 +184,6 @@
 			.append("svg")
 			.attr("width", wMapLegend)
 			.attr("height", hMapLegend);
-
-
 
 		// New line
 		d3.select("div.viz")
@@ -296,9 +284,9 @@
 						.append("svg")
 						.attr("width", wArea + paddingArea)
 						.attr("height", hArea + paddingArea);
-		
+
 		svgArea.call(tipArea);
-		
+
 
 		var areaLegend = d3.select("div.viz")
 			.append("svg")
@@ -338,8 +326,7 @@
 		.attr("height", 20)
 		.attr("fill", function(d) {
 			return d;
-		})
-		.text("High income");
+		});
 
 		mapLegend.selectAll("text")
 			 .data(income_groups)
@@ -445,8 +432,8 @@
 			}
 
 			map.selectAll("path")
-				.classed("active", centered && function(d) { 
-					return d === centered; 
+				.classed("active", centered && function(d) {
+					return d === centered;
 				});
 
 			map.transition()
@@ -684,6 +671,7 @@
 							.data(year_observation)
 							.enter()
 							.append("rect")
+							.attr("class", "histogram")
 							.attr("x", function(d, i) {
 							return xScaleHist(i);
 							})
@@ -863,7 +851,7 @@
 
 			// new selection on map related to updating histogram
 			map.selectAll("path")
-				.on("mouseover", function(d) { 
+				.on("mouseover", function(d) {
 					mouseOverHandler.call(this, d);
 					tipMap.show.call(this,d);
 				})
@@ -934,10 +922,12 @@
 
 						 // update area chart to show all areas again
 
+						 keys = keys_aggregated_data;
+						 series = series_aggregated_data;
 
 						 		// 2. Redefine y axis domain
 						 		yScaleArea = d3.scaleLinear()
-						 				.domain([0,d3.max(education_data_subset, function(d) {
+						 				.domain([0,d3.max(education_data, function(d) {
 						 					var sum = 0;
 						 					for (var i = 0; i < keys.length; i++) {
 						 						sum += +d[keys[i]];
@@ -1060,7 +1050,6 @@
  			}
 
  			});
-
 
 
  			// Function for updating the map
