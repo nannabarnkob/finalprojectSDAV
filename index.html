@@ -23,7 +23,7 @@
 				transition: all 0.25s;
 			}
 			.area:hover {
-				fill: blue;
+				fill: rgb(255, 204, 0);
 			}
 
 			rect {
@@ -36,7 +36,7 @@
 			.histogram:hover {
 				stroke-width: 2px;
 				stroke: white;
-				fill: blue;
+				fill: rgb(255, 204, 0);
 			}
 
 			.btn {
@@ -50,7 +50,7 @@
 			}
 
 			.btn:hover {
-					background-color: rgb(51, 204, 51)
+					background-color: rgb(255, 204, 0);
 			}
 
 			.areabutton {
@@ -64,7 +64,7 @@
 			}
 
 			.active {
-				background-color: rgb(51, 204, 51);
+				background-color: rgb(255, 204, 0);
 			}
 /*
 			.activeArea {
@@ -81,7 +81,7 @@
 
 			.d3-tip {
 			  line-height: 1;
-			  font-weight: bold;
+			  font-weight: normal;
 			  padding: 12px;
 			  background: rgba(0, 0, 0, 0.8);
 			  color: #fff;
@@ -101,20 +101,15 @@
 
 		<div class="section">
 			<h1> Welcome to Copenhagen. </h1>
-			<p> Here you can move in time and space </p>
-		<div class="viz"> 
-		</div>
+			<p> Here you can investigate the development differences in income level, educational level and age distribution in Copenhagen. Move through time and space by selecting years on the buttons below and space by choosing an area of interest. </p>
+    <div class="viz"> </div>
+		<p>The legends for educational can be hovered for a description of each category.</p>
 
     <script type="text/javascript">
-		$( "#337" ).select(function() {
-  		alert( "Handler for .select() called." );
-		});
-		$( "#337").click(function() {
-  	$( "#337" ).select();
-	});
-	 	// width and height for the visualization
-    	var wMap = 1000;
-    	var hMap = 500;
+
+    	// width and height for map of visualization
+    var wMap = 1000;
+    var hMap = 500;
 		var wHist = 500;
 		var hHist = 400;
 		var wArea = 500;
@@ -150,7 +145,7 @@
 			.attr('class', 'd3-tip')
 			.offset([-10, 0])
 			.html(function(d) {
-				return "Number of people: " + d3.format(",")(d);
+				return "<span style='font-weight: bold'> Number of people: </span>" + d3.format(",")(d);
 			});
 
 		// define tooltip for map
@@ -158,7 +153,7 @@
 			.attr('class', 'd3-tip')
 			.offset([-10, 0])
 			.html(function(d) {
-				return "Area: " + d.properties.rodenavn + "<br> High income: " + d.properties.pct_hoj_indkomst + "%" + "<br> Middle income: " + d.properties.pct_middel_indkomst + "% <br> Low income: " + d.properties.pct_lav_indkomst + "%";
+				return "<span style='font-weight: bold'> Area: </span> <span style='color:red'>" + d.properties.rodenavn + "</span><br> High income: " + d.properties.pct_hoj_indkomst + "%" + "<br> Middle income: " + d.properties.pct_middel_indkomst + "% <br> Low income: " + d.properties.pct_lav_indkomst + "%";
 			});
 
 		// define tooltip for area
@@ -267,7 +262,7 @@
 			.attr("id", "AllAreas")
 			.text("View all areas");
 
-		// Create svg for the area and year text 
+		// Create svg for the area and year text
 		var svgText = d3.select("div.viz")
 			.append("svg")
 			.attr("text-align","center")
@@ -314,9 +309,10 @@
 
 		// Create map legends
 		var map_colors = ["rgb(51, 204, 51)",  "rgb(255, 204, 0)", "rgb(255, 0, 0)", "#d3d3d3" ]
+		var map_colors = ['#d0d1e6', '#74a9cf', '#034e7b', "#d3d3d3"]
 		var income_groups = ["High income", "Middle income", "Low income", "Missing data"]
 
-		// Define color bars for map legend
+		var area_map_colors = ['#f1eef6','#d0d1e6','#a6bddb','#74a9cf','#3690c0','#0570b0','#034e7b']
 		mapLegend.selectAll("rect")
 			.data(map_colors)
 			.enter()
@@ -352,14 +348,13 @@
 			// Legend for stacked area chart
 			var education_groups = ["High school", "Vocational education", "Short higher education", "Medium higher education", "Long higher education", "No education", "During education"]
 			// source:  https://ufm.dk/uddannelse/anerkendelse-og-dokumentation/dokumentation/termbase
-			// (Graduate)
-			// Extra information in stacked area chart
-			var education_explain = ["High school in Denmark is a 2-3 year education after public school. It is preparing the students to take a higher education afterwards." ,
-									"Vocational training is a common term for educations after public shcool aiming at a particular proffesion. The length of the education can vary between 2 and 5,5 years.",
-									"Short higher education demands that the student has completed high school or in some cases a vacational education is enough. They last 2-3 years and entails in most cases a vocational academy degree.",
-									"Medium higher education demands that the student has completed high school or in some cases a vacational education is enough. They last 3-4,5 years.",
-									"Long higher education demands that the student has completed high school. In few cases a vacational education is enough. They last 5-6 year higher and is studied at universities.",
-									"One without an education. Can for example be children which has reached the educational stage yet.",
+			 // (Graduate)
+			var education_explain = ["High school in Denmark is a 2-3 year education after public school. It prepares the students to pursue a higher education afterwards." ,
+									"Vocational training is a common term for educations after public shcool aiming at a particular profession. The length of the education can vary between 2 and 5.5 years.",
+									"Short higher education demands that the student has completed high school or, in some cases, a vocational education is enough. They last 2-3 years and entails in most cases a vocational academy degree.",
+									"Medium higher education demands that the student has completed high school or, in some cases, a vocational education is enough. They last 3-4.5 years.",
+									"Long higher education demands that the student has completed high school. In few cases a vocational education is enough. They last 5-6 year higher and is studied at universities.",
+									"One without an education. Can for example be children which have not reached the educational stage yet.",
 									"One during education. Can be any of the above mention educations."];
 
 		// Define color bar for stacked area legend
@@ -370,13 +365,13 @@
 		.attr("x", 45)
 		.attr("y", function(d, i) {
 		 	return  15 + 60*i;
-		})
-		.attr("width", 20)
-		.attr("height", 20)
-		.attr("fill", function(d,i) {
-		 	return d3.schemeCategory10[i];
-		})
-		.text(function(d) {
+		 })
+		 .attr("width", 20)
+		 .attr("height", 20)
+		 .attr("fill", function(d,i) {
+		 	return area_map_colors[i];
+		 })
+		 .text(function(d) {
 			 return d
 		})
 		.on("mouseover", tipLegend.show)
@@ -393,7 +388,7 @@
 					tspan.attr('x', 110).attr('dy', '15');
 				}
 		};
-		
+
 		// Define text for stacked area chart
 		areaLegend.selectAll("text")
 		 	.data(education_groups)
@@ -658,7 +653,7 @@
 			svgText.append("text")
                 .attr("transform", "translate(" + (wText/2) + "," + hText/2 + ")")
 				.style("text-anchor", "middle")
-				.text("Area: " + selected_name + ", year " + paragraphID)
+				.html("Area: " + selected_name + ", year " + paragraphID)
 				.attr("font-weight", "bold")
 				.attr("class", "header")
 				.attr("id", "headerHist")
@@ -707,44 +702,45 @@
 
 			// Create bars
 			svgHist.append("g")
-				.selectAll("rect")
-				.data(year_observation)
-				.enter()
-				.append("rect")
-				.attr("class", "histogram")
-				.attr("x", function(d, i) {
-					return xScaleHist(i);
-				})
-				.attr("y", function(d) {
-					return yScaleHist(d) - paddingHist/2;
-				})
-				.attr("width", xScaleHist.bandwidth())
-				.attr("height", function(d, i) {
-					return hHist - yScaleHist(d);
-				})
-				.attr("fill", function(d) {
-					return "rgb(100, " + parseInt(yScaleHist(d)*0.5+30) + ", 200)";
-				})
-				.on('mouseover', tipHist.show)
-				.on('mouseout', tipHist.hide);
+							.selectAll("rect")
+							.data(year_observation)
+							.enter()
+							.append("rect")
+							.attr("class", "histogram")
+							.attr("x", function(d, i) {
+							return xScaleHist(i);
+							})
+							.attr("y", function(d) {
+							return yScaleHist(d) - paddingHist/2;
+							})
+							.attr("width", xScaleHist.bandwidth())
+							.attr("height", function(d, i) {
+							return hHist - yScaleHist(d);
+							})
+							.attr("fill", function(d) {
+								return "rgb(70," + parseInt(yScaleHist(d)*0.5+50) + "," + parseInt(yScaleHist(d)*0.5+100)+")";
+							//return "rgb(100, " + parseInt(yScaleHist(d)*0.5+30) + ", 200)";
+						})
+							.on('mouseover', tipHist.show)
+							.on('mouseout', tipHist.hide);
 
-				// Make x axis
-				svgHist.append("g")
-					.attr("class","x axis")
-					.attr("transform","translate(0," + (hHist - paddingHist/2) + ")")
-					.call(xAxisHist);
+			// Make x axis
+			svgHist.append("g")
+						.attr("class","x axis")
+						.attr("transform","translate(0," + (hHist - paddingHist/2) + ")")
+						.call(xAxisHist);
 
-				// Create y axis
-				svgHist.append("g")
-					.attr("class","y axis")
-					.attr("transform","translate(" + paddingHist * 2 + "," + -paddingHist/2 + ")")
-					.call(yAxisHist);
+			// Create y axis
+			svgHist.append("g")
+						.attr("class","y axis")
+						.attr("transform","translate(" + paddingHist * 2 + "," + -paddingHist/2 + ")")
+						.call(yAxisHist);
 
 				// Create x axis label
 				svgHist.append("text")
                       .attr("transform", "translate(" + (wHist/2 + paddingHist) + " , " + (hHist + paddingHist) + " )")
                       .style("text-anchor", "middle")
-                      .text("Agegroups")
+                      .text("Age groups")
                       .attr("fill", "black")
                       .attr("font-size","16px");
 
@@ -754,7 +750,7 @@
 					.attr("x", -hHist/2)
 					.attr("y", 0)
 					.style("text-anchor", "middle")
-					.text("Number of people in the agegroup")
+					.text("Number of people")
 					.attr("fill", "black")
 					.attr("font-size","16px");
 
@@ -839,7 +835,7 @@
 					.attr("class","area")
 					.attr("d", area)
 					.attr("fill",function(d,i) {
-						return d3.schemeCategory10[i];
+						return area_map_colors[i];
 					})
 					.on('mouseover', tipArea.show) // tooltip
 					.on('mouseout', tipArea.hide);
@@ -870,7 +866,7 @@
 						.attr("x", -hArea/2)
 						.attr("y", wArea + paddingArea + paddingArea/2)
 						.style("text-anchor", "middle")
-						.text("Number")
+						.text("Number of people")
 						.attr("fill", "black")
 						.attr("font-size","16px");
 
@@ -906,7 +902,7 @@
 					var selected_rodenr = d3.select(this).attr("id");
 					var selected_name = d3.select(this).attr("text");
 					// update title according to selected area:
-					svgText.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
+					svgText.select(".header").html("Area: " + selected_name + ", year " + paragraphID)
 
 					// collect data for histogram
 					var age_distribution_data = [d.properties.alder_antal_0_5, d.properties.alder_antal_6_17, d.properties.alder_antal_18_29, d.properties.alder_antal_30_39, d.properties.alder_antal_40_49,d.properties.alder_antal_50_64, d.properties.alder_antal_over_65]
@@ -999,7 +995,7 @@
 						 			})
 						 			.ease(d3.easeLinear)
 						 			.attr("fill",function(d,i) {
-						 				return d3.schemeCategory10[i];
+						 				return area_map_colors[i];
 						 			});
 
 
@@ -1031,8 +1027,10 @@
  							year_age_observation.push(+d["alder_antal_over_65"])
  						};
  					});
-					svgText.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
+					svgText.select(".header").html("<span style='font-weight: bold'> Area: " + selected_name + ", Year: </span> " + paragraphID)
  					update_histogram(year_age_observation);
+
+
 
  			}
 			// Case for paragraphID is a year
@@ -1130,32 +1128,33 @@
 				map.selectAll("path")
 					.data(selected_year_data.features)
 					.attr("fill", function(d, i) {
+
 						// make array of three income values
 						var obj = [d.properties.pct_hoj_indkomst, d.properties.pct_middel_indkomst, d.properties.pct_lav_indkomst]
 						// check for missing data
 						if (obj.reduce(add, 0) == 0) {
-							return "#d3d3d3" // fill path with grey
+							return map_colors[3]  // fill path with grey
 						}
 						else if(obj.reduce(add, 0) != 0) {
-							// find index of max value, determines case for if statement
+							// find index of max value
 							var maxKey = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
 							// if most prevalent area is high income:
 							if(maxKey == 0) {
 								total_zeros += 1
-								return "rgb(51, 204, 51)" // green
+								return map_colors[0] // green
 							}
 							// if most prevalent is middle income:
 							if(maxKey == 1) {
 								total_ones += 1
-								return "rgb(255, 204, 0)" // orange
+								return map_colors[1] // orange
 							}
 							// if most prevalent area is low income:
 							if(maxKey == 2) {
 								total_twos += 1
-								return "rgb(255, 0, 0)" // red
+								return map_colors[2]// red
 							}
 						}
-					});
+					})
 				}
 
 	// Function for updating the stacked area chart
@@ -1232,7 +1231,7 @@
 			})
 			.ease(d3.easeLinear)
 			.attr("fill",function(d,i) {
-				return d3.schemeCategory10[i];
+				return  area_map_colors[i];
 			});
 
 
@@ -1267,7 +1266,7 @@
 					return hHist - yScaleHist(d);
 				})
 				.attr("fill", function(d) {
-					return "rgb(100, " + parseInt(yScaleHist(d)*0.5+30) + ", 200)";
+						return "rgb(54," + parseInt(yScaleHist(d)*0.5+50) + "," + parseInt(yScaleHist(d)*0.5+100)+")";
 			});
 
 		// Update y axis
