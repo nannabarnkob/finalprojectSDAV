@@ -18,7 +18,7 @@
 				stroke: none;
 			}
 			.area:hover {
-				fill: yellow;
+				fill: blue;
 			}
 
 			rect {
@@ -29,7 +29,7 @@
 			}
 
 			rect:hover {
-				fill: yellow;
+				fill: blue;
 			}
 
 			.btn {
@@ -39,28 +39,74 @@
 		    font-size: 16px;
 		    cursor: pointer;
 		    display: inline-block;
+				color: black;
 			}
-			/* Gray */
-			.default {
-			    color: black;
+			.btn:hover {
+					background-color: rgb(51, 204, 51)
 			}
 
-			.default:hover {
-			    background: #e7e7e7;
+			.areabutton {
+				border: none;
+				background-color: inherit;
+				padding: 14px 28px;
+				font-size: 16px;
+				cursor: pointer;
+				display: inline-block;
+				color: black;
 			}
 
 			.active {
-				background-color: yellow;
+				background-color: rgb(51, 204, 51);
+			}
+/*
+			.activeArea {
+				background-color: rgb(20,20,20)
+			}
+*/
+			.active {
+				stroke-width: 2px;
+				stroke: white;
+			}
+			.areaActive {
+				fill: green;
 			}
 
-			.active {
-				fill: yellow;
+
+			.d3-tip {
+			  line-height: 1;
+			  font-weight: bold;
+			  padding: 12px;
+			  background: rgba(0, 0, 0, 0.8);
+			  color: #fff;
+			  border-radius: 2px;
 			}
+
+			/* Creates a small triangle extender for the tooltip */
+			.d3-tip:after {
+			  box-sizing: border-box;
+			  display: inline;
+			  font-size: 10px;
+			  width: 100%;
+			  line-height: 1;
+			  color: rgba(0, 0, 0, 0.8);
+			  content: "\25BC";
+			  position: absolute;
+			  text-align: center;
+			}
+
 	}
 	</style>
   <body>
 
+		<div class="topnav">
+			<h1>Final project: Data visualization</h1>
+			<a href="index.html">Data visualization</a>
+			<a href="exaplainer_page.html">Explainer page </a>
+			<a href="https://www.youtube.com/watch?v=EVXf39oqMXY&t=1s"> Watch the youtube introduction</a>
+		</div>
+
 		<div class="section">
+			<h1> Welcome to Copenhagen. </h1>
 			<p> Here you can move in time and space </p>
     <div class="viz"> </div>
 
@@ -80,6 +126,11 @@
 		var hArea = 400;
 		var wText = 1000;
 		var hText = 40;
+		var wMapLegend = 200;
+		var hMapLegend = hMap;
+		var wAreaLegend = 200;
+		var hAreaLegend = hArea;
+
 		var centered;
 
 		// define padding
@@ -99,17 +150,24 @@
 		// Array for colors
     var color = ['#64848E', '#DADED6', '#B6A693', '#9A9AA1', '#85818D']
 
+
     //Create SVG elements for our visualization
     	var svgMap = d3.select("div.viz")
        		.append("svg")
-  			.attr("width", wMap)
-       		.attr("height", hMap);
+  				.attr("width", wMap + paddingMap)
+       		.attr("height", hMap + paddingMap);
+
+			var mapLegend = d3.select("div.viz")
+			.append("svg")
+			.attr("width", wMapLegend)
+			.attr("height", hMapLegend);
+
 
 		// New line
 		d3.select("div.viz")
 		.append("br");
 
-		// Create buttons
+		// Create div for buttons
 		d3.select("div.viz")
 		.append("div")
 		.attr("width", wMap)
@@ -120,50 +178,66 @@
 
 		d3.select("div#buttons")
 			.append("button")
-			.attr("class", "statistic btn default")
+			.attr("class", "btn")
 			.attr("id", "2008")
 			.text("2008");
 
 
 			d3.select("div#buttons")
 				.append("button")
-			.attr("class", "statistic btn default")
+			.attr("class", "btn")
 			.attr("id", "2009")
 			.text("2009");
 
 
 			d3.select("div#buttons")
 				.append("button")
-			.attr("class", "statistic btn default")
+			.attr("class", "btn")
 			.attr("id", "2010")
 			.text("2010");
 
 
 			d3.select("div#buttons")
 				.append("button")
-			.attr("class", "statistic btn default")
+			.attr("class", "btn")
 			.attr("id", "2011")
 			.text("2011");
 
 
 			d3.select("div#buttons")
 				.append("button")
-			.attr("class", "statistic btn default")
+			.attr("class", "btn")
 			.attr("id", "2012")
 			.text("2012");
 
 
 			d3.select("div#buttons")
 				.append("button")
-			.attr("class", "statistic btn default")
+			.attr("class", "btn")
 			.attr("id", "2013")
 			.text("2013");
 
 			d3.select("div#buttons")
 				.append("button")
-				.attr("class", "statistic btn default")
+				.attr("class", "areabutton")
 				.attr("id", "AllAreas")
 				.text("View all areas");
+
+		// Get the container element
+		var btnContainer = document.getElementById("buttons");
+
+		// Get all buttons with class="btn" inside the container
+		var btns = btnContainer.getElementsByClassName("btn");
+
+		// Loop through the buttons and add the active class to the current/clicked button
+		for (var i = 0; i < btns.length; i++) {
+		  btns[i].addEventListener("click", function() {
+		    var current = document.getElementsByClassName("active");
+				console.log(current)
+		    current[0].className = current[0].className.replace(" active", "");
+		    this.className += " active";
+		  });
+		}
 
 		var svgText = d3.select("div.viz")
 			.append("svg")
@@ -181,12 +255,18 @@
 						.attr("width", wHist + paddingHist)
 						.attr("height", hHist + paddingHist);
 
+		//svgHist.call(tip);
+
 		// Create svg for stacked area chart
 		var svgArea = d3.select("div.viz")
 						.append("svg")
 						.attr("width", wArea + paddingArea)
 						.attr("height", hArea + paddingArea);
 
+		var areaLegend = d3.select("div.viz")
+			.append("svg")
+			.attr("width", wAreaLegend)
+			.attr("height", hAreaLegend);
 		//Create the map to which we append everything ...
 	  	var map = svgMap.append("g")
 	        .attr("id", "map");
@@ -199,6 +279,89 @@
     				.attr("height", hMap)
             .attr("opacity", 0)
 						.on("click",clicked);
+
+		// Create map legends
+		var map_colors = ["rgb(51, 204, 51)",  "rgb(255, 204, 0)", "rgb(255, 0, 0)", "#d3d3d3" ]
+		var income_groups = ["High income", "Middle income", "Low income", "Missing data"]
+
+		mapLegend.selectAll("rect")
+		.data(map_colors)
+		.enter()
+		.append("rect")
+		.attr("x", 10)
+		.attr("y", function(d, i) {
+		return 100 + 60*i;
+		})
+		.attr("width", 100)
+		.attr("height", 20)
+		.attr("fill", function(d) {
+			return d;
+		})
+		.text("High income");
+
+		mapLegend.selectAll("text")
+			 .data(income_groups)
+			 .enter()
+			 .append("text")
+			 .text(function(d) {
+					return d;
+			 })
+			 .attr("text-anchor", "middle")
+			 .attr("x", 60)
+			 .attr("y", function(d, i) {
+	 				return 95 + 60*i;
+	 			})
+			 .attr("font-family", "sans-serif")
+			 .attr("font-size", "15px")
+			 .attr("fill", "black");
+
+
+			var education_groups = ["antal_gymnasial_udd", "antal_erh_faglig_udd", "antal_kort_viderg_udd", "antal_mellemlang_viderg_udd", "antal_lang_viderg_udd", "antal_ingen_udd", "antal_under_udd"]
+			var education_groups = ["High school", "Vocational", "Short-cycle higher education", "Medium-cycle higher education", "Long cycle higher education", "No education", "Students"]
+			// source:  https://ufm.dk/uddannelse/anerkendelse-og-dokumentation/dokumentation/termbase
+			 // (Graduate)
+
+		 areaLegend.selectAll("rect")
+		 .data(education_groups)
+		 .enter()
+		 .append("rect")
+		 .attr("x", 45)
+		 .attr("y", function(d, i) {
+		 return  15 + 50*i;
+		 })
+		 .attr("width", 100)
+		 .attr("height", 20)
+		 .attr("fill", function(d,i) {
+		 	return d3.schemeCategory10[i];
+		 })
+		 .text(function(d) {return d});
+
+		 areaLegend.selectAll("text")
+		 	 .data(education_groups)
+		 	 .enter()
+		 	 .append("text")
+			 .append("tspan")
+		 	 .html(function(d) {
+		 			return d;
+		 	 })
+		 	 .attr("text-anchor", "middle")
+		 	 .attr("x", 100)
+		 	 .attr("y", function(d, i) {
+		 			return 10 + 50*i;
+		 		})
+			 .attr("width", 100)
+		 	 .attr("font-family", "sans-serif")
+		 	 .attr("font-size", "15px")
+		 	 .attr("fill", "black");
+
+
+			 // define tooltip
+		//	 var tip = d3.tip()
+		//	   .attr('class', 'd3-tip')
+		//	   .offset([-10, 0])
+		//	   .html(function(d) {
+		//	     return "Number of people:" + d;
+		//	   });
 
 		// define starting year:
 		var paragraphID = "2008" // starting year is actually defined in the creation of the map
@@ -368,7 +531,7 @@
 					var obj = [d.properties.pct_hoj_indkomst, d.properties.pct_middel_indkomst, d.properties.pct_lav_indkomst]
 					// check for missing data
 					if (obj.reduce(add, 0) == 0) {
-						return "#d3d3d3"  // fill path with grey
+						return map_colors[3]  // fill path with grey
 					}
 					else if(obj.reduce(add, 0) != 0) {
 						// find index of max value
@@ -376,17 +539,17 @@
 						// if most prevalent area is high income:
 						if(maxKey == 0) {
 							total_zeros += 1
-							return "rgb(51, 204, 51)" // green
+							return map_colors[0] // green
 						}
 						// if most prevalent is middle income:
 						if(maxKey == 1) {
 							total_ones += 1
-							return "rgb(255, 204, 0)" // orange
+							return map_colors[1] // orange
 						}
 						// if most prevalent area is low income:
 						if(maxKey == 2) {
 							total_twos += 1
-							return "rgb(255, 0, 0)" // grey
+							return map_colors[2]// red
 						}
 					}
 				})
@@ -395,7 +558,6 @@
 				.text(function(d) {
 					return "Area name: " + d.properties.rodenavn
 				});
-
 
 				// log how many low- middle high class areas there should be
 				console.log(total_zeros,total_ones,total_twos)
@@ -422,35 +584,6 @@
 
 			d3.csv("Sorted_data.csv",function(data) {
 				var sorted_data = data;
-				//dataset = data;
-/*
-				data.forEach(d => {
-					if (+d.aar == 2008) {
-						aar2008.push(d);
-					}
-					else if (+d.aar == 2009) {
-						aar2009.push(d);
-					}
-					else if (+d.aar == 2010) {
-						aar2010.push(d);
-					}
-					else if (+d.aar == 2011) {
-						aar2011.push(d);
-					}
-					else if (+d.aar == 2012) {
-						aar2012.push(d);
-					}
-					else if (+d.aar == 2013) {
-						aar2013.push(d);
-					}
-					else if (+d.aar == 2014) {
-						aar2014.push(d);
-					}
-				})
-				*/
-
-
-			// for showing something when loading the page:
 
 			// Load the aggreagetd age data
 			d3.csv("Aggregated_data.csv", function(data) {
@@ -509,12 +642,14 @@
 							return hHist - yScaleHist(d);
 							})
 							.attr("fill", function(d) {
-							return "rgb(255, 0, 255)";
-							})
-							.append("title") // for tool tip
-							.text(function(d) {
-								return "Number of people: " + d3.format(",")(d);
-							});
+							return "rgb(100," + yScaleHist(d)*0.5+30 +", 200)";
+						});
+							//.on('mouseover', tip.show)
+							//.on('mouseout', tip.hide);
+							//.append("title") // for tool tip
+							//.text(function(d) {
+						//		return "Number of people: " + d3.format(",")(d);
+					//		});
 
 			// Make x axis
 			svgHist.append("g")
@@ -620,12 +755,13 @@
 					.attr("class","area")
 					.attr("d", area)
 					.attr("fill",function(d,i) {
-						return d3.schemeCategory20[i];
+						return d3.schemeCategory10[i];
 					})
 					.append("title") // for tool tip
 					.text(function(d) {
 						return d.key;
 					})
+					console.log(keys)
 
 					svgArea.append("g")
 						.attr("class", "x axis")
@@ -772,6 +908,7 @@
 				// Two cases: either update the histogram based on the active area or all aggregated data
 				if (all_areas_toggled) {
 					console.log("Updating histogram with full data set and year", paragraphID)
+					d3.select("#AllAreas").classed("active", true)
 					selected_name = "All"
 					year_age_observation = [];
 
@@ -956,7 +1093,7 @@
 			})
 			.ease(d3.easeLinear)
 			.attr("fill",function(d,i) {
-				return d3.schemeCategory20[i];
+				return d3.schemeCategory10[i];
 			});
 
 
@@ -991,12 +1128,12 @@
 					return hHist - yScaleHist(d);
 				})
 				.attr("fill", function(d) {
-					return "rgb(255, 0, 255)";
-				});
-				//.append("title")
-				//.text(function(d) {
-				//	return "Number of people: " + d3.format(",")(d);
-				//});
+				return "rgb(100," + yScaleHist(d)*0.5+30 +", 200)";
+			});
+//				.append("title")
+	//			.text(function(d) {
+		//			return "Number of people: " + d3.format(",")(d);
+			//	});
 
 		// Update y axis
 		svgHist.select(".y.axis")
