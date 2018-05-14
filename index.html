@@ -5,6 +5,9 @@
     <script src="https://d3js.org/d3.v4.min.js"></script>
 		<script src='https://api.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js'></script>
 		<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+		<script src="d3-tip.js"></script>
+
+
 		<link rel="stylesheet" href="style.css">
   </head>
 	<style>
@@ -148,6 +151,14 @@
 		// Array for colors
     var color = ['#64848E', '#DADED6', '#B6A693', '#9A9AA1', '#85818D']
 
+		// define tooltip
+		var tip = d3.tip()
+			.attr('class', 'd3-tip')
+			.offset([-10, 0])
+			.html(function(d) {
+				return "Number of people:" + d3.format(",")(d);
+			});
+			console.log(tip)
 
     //Create SVG elements for our visualization
     	var svgMap = d3.select("div.viz")
@@ -159,6 +170,7 @@
 			.append("svg")
 			.attr("width", wMapLegend)
 			.attr("height", hMapLegend);
+
 
 
 		// New line
@@ -253,7 +265,7 @@
 						.attr("width", wHist + paddingHist)
 						.attr("height", hHist + paddingHist);
 
-		//svgHist.call(tip);
+		svgHist.call(tip);
 
 		// Create svg for stacked area chart
 		var svgArea = d3.select("div.viz")
@@ -318,8 +330,8 @@
 			var education_groups = ["High school", "Vocational", "Short higher education", "Medium higher education", "Long higher education", "During education", "No education"]
 			// source:  https://ufm.dk/uddannelse/anerkendelse-og-dokumentation/dokumentation/termbase
 			 // (Graduate)
-			var education_explain = ["High school in Denmark is a 2-3 year education after public school. It is preparing the students to take a higher education afterwards." , 
-									"Vocational training is a common term for educations after public shcool aiming at a particular proffesion. The length of the education can vary between 2 and 5,5 years.", 
+			var education_explain = ["High school in Denmark is a 2-3 year education after public school. It is preparing the students to take a higher education afterwards." ,
+									"Vocational training is a common term for educations after public shcool aiming at a particular proffesion. The length of the education can vary between 2 and 5,5 years.",
 									"Short higher education demands that the student has completed high school or in some cases a vacational education is enough. They last 2-3 years and entails in most cases a vocational academy degree.",
 									"Medium higher education demands that the student has completed high school or in some cases a vacational education is enough. They last 3-4,5 years.",
 									"Long higher education demands that the student has completed high school. In few cases a vacational education is enough. They last 5-6 year higher and is studied at universities.",
@@ -366,13 +378,7 @@
 		 	 .attr("fill", "black");
 
 
-			 // define tooltip
-		//	 var tip = d3.tip()
-		//	   .attr('class', 'd3-tip')
-		//	   .offset([-10, 0])
-		//	   .html(function(d) {
-		//	     return "Number of people:" + d;
-		//	   });
+
 
 		// define starting year:
 		var paragraphID = "2008" // starting year is actually defined in the creation of the map
@@ -654,9 +660,9 @@
 							})
 							.attr("fill", function(d) {
 							return "rgb(100," + yScaleHist(d)*0.5+30 +", 200)";
-						});
-							//.on('mouseover', tip.show)
-							//.on('mouseout', tip.hide);
+						})
+							.on('mouseover', tip.show)
+							.on('mouseout', tip.hide);
 							//.append("title") // for tool tip
 							//.text(function(d) {
 						//		return "Number of people: " + d3.format(",")(d);
@@ -714,13 +720,16 @@
 				console.log("original format of area chart data:")
 				console.log(data)
 				education_data = data;
-				var keys = education_data.columns;
+				var keys_aggregated_data = education_data.columns;
 				// remove the first and last column
-				keys.shift();
-				keys.pop();
-				stack.keys(keys);
+				keys_aggregated_data.shift();
+				keys_aggregated_data.pop();
+				stack.keys(keys_aggregated_data);
 
-				var series = stack(education_data);
+				var keys = keys_aggregated_data;
+
+				var series_aggregated_data = stack(education_data);
+				var series = series_aggregated_data;
 
 				var xScaleArea = d3.scaleLinear()
 				.domain([2008, d3.max(education_data, function(d) {
@@ -878,6 +887,56 @@
 						 .duration(700)
 						 .attr("transform", "translate(" + (wMap) / 2 + "," + hMap / 2 + ")scale(" + k + ")translate(" + -x + "," + -y  + ")")
 						 .attr("stroke-width", 1.5 / k + "px");
+
+						 // update area chart to show all areas again
+
+
+						 		// 2. Redefine y axis domain
+						 		yScaleArea = d3.scaleLinear()
+						 				.domain([0,d3.max(education_data_subset, function(d) {
+						 					var sum = 0;
+						 					for (var i = 0; i < keys.length; i++) {
+						 						sum += +d[keys[i]];
+						 					};
+						 					return sum;
+						 				})])
+						 				.range([hArea - paddingArea, paddingArea])
+						 				.nice();
+
+						 		yAxisArea = d3.axisRight()
+						 					.scale(yScaleArea)
+						 					.ticks(10);
+
+						 		area = d3.area()
+						 					.x(function(d) {
+						 						return xScaleArea(d.data.aar);
+						 					})
+						 					.y0(function(d) {
+						 						return yScaleArea(d[0]);
+						 					})
+						 					.y1(function(d) {
+						 						return yScaleArea(d[1]);
+						 					});
+
+						 		// 3. Update paths and y axis
+						 		svgArea.selectAll("path")
+						 			.data(series)
+						 			.transition()
+						 			.duration(1300)
+						 			.attr("d", area)
+						 			.delay(function(d, i) {
+						 				return i / series.length;
+						 			})
+						 			.ease(d3.easeLinear)
+						 			.attr("fill",function(d,i) {
+						 				return d3.schemeCategory10[i];
+						 			});
+
+
+						 			svgArea.select(".y.axis")
+						 				.transition()
+						 				.duration(1300)
+						 				.call(yAxisArea);
 					 }
 
 				else {
