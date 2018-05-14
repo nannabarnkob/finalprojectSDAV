@@ -363,9 +363,9 @@
 		 .append("rect")
 		 .attr("x", 45)
 		 .attr("y", function(d, i) {
-		 return  15 + 50*i;
+		 	return  15 + 50*i;
 		 })
-		 .attr("width", 100)
+		 .attr("width", 20)
 		 .attr("height", 20)
 		 .attr("fill", function(d,i) {
 		 	return d3.schemeCategory10[i];
@@ -375,10 +375,6 @@
 		})
 		.on("mouseover", tipLegend.show)
 		.on("mouseout", tipLegend.hide);
-		//.append("title")
-		//.text(function(d, i) {
-			//return education_explain[i];
-		//});
 
 		 areaLegend.selectAll("text")
 		 	 .data(education_groups)
@@ -683,8 +679,9 @@
 							return hHist - yScaleHist(d);
 							})
 							.attr("fill", function(d) {
-							return "rgb(100," + yScaleHist(d)*0.5+30 +", 200)";
-						})
+								return "rgb(100," + parseInt(yScaleHist(d)*0.5+30) + ", 200)";
+							})
+							//.attr("fill", "red")
 							.on('mouseover', tipHist.show)
 							.on('mouseout', tipHist.hide);
 							//.append("title") // for tool tip
@@ -1189,7 +1186,7 @@
 		svgArea.selectAll("path")
 			.data(series)
 			.transition()
-			.duration(1300)
+			.duration(700)
 			.attr("d", area)
 			.delay(function(d, i) {
 				return i / series.length;
@@ -1202,7 +1199,7 @@
 
 			svgArea.select(".y.axis")
 				.transition()
-				.duration(1300)
+				.duration(1000)
 				.call(yAxisArea);
 	}
 
@@ -1218,7 +1215,7 @@
 		svgHist.selectAll("rect")
 				.data(age_data_array)
 				.transition()
-				.duration(1300)
+				.duration(700)
 				.ease(d3.easeLinear)
 				.attr("x", function(d, i) {
 					return xScaleHist(i);
@@ -1231,7 +1228,7 @@
 					return hHist - yScaleHist(d);
 				})
 				.attr("fill", function(d) {
-				return "rgb(100," + yScaleHist(d)*0.5+30 +", 200)";
+				return "rgb(100," + parseInt(yScaleHist(d)*0.5+30) +", 200)";
 			});
 //				.append("title")
 	//			.text(function(d) {
@@ -1241,7 +1238,7 @@
 		// Update y axis
 		svgHist.select(".y.axis")
 					.transition()
-					.duration(1300)
+					.duration(1000)
 					.call(yAxisHist);
 	}
 	});
