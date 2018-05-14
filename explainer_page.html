@@ -10,20 +10,19 @@
   <body>
 
 		<div class="section">
-    <h1>Explainer page</h1>
-
+			<h3>Final project: Social Data Analysis and Visualization</h3>
+			<h1> Explainer page </h1>
+			<center><a href="index.html">Data visualization</a>
+			<a href="explainer_page.html">Explainer page </a></center>
+			<a href="https://github.com/nannabarnkob/finalprojectSDAV/">Github Repository </a>
     <h2>Motivation</h2>
-    <h3>What is your data set?
-    Why did you choose this particular dataset?
-    What was your goal for the end user’s experience? </h3><br><br>
 
-    <p>The visualization is based on data from <a href="https://portal.opendata.dk/dataset/samlede-socio-data-kbh/resource/37bc1c1a-1f57-4fcb-8b20-2a3b5b67c537">portal.opendata.dk</a>
-      and was released by the municipality of Copenhagen. The original data set contains 2764 rows corresponding to observations distributed on 394 areas of Copenhagen.
+    <p>The visualization is based on data from<a href="https://portal.opendata.dk/dataset/samlede-socio-data-kbh/resource/37bc1c1a-1f57-4fcb-8b20-2a3b5b67c537">portal.opendata.dk</a>and was released by the municipality of Copenhagen. The original data set contains 2764 rows corresponding to observations distributed on 394 areas of Copenhagen.
       For each area, we have seven data observations, one for each year ranging from 2008 to 2014. For 2014 a lot of information is missing and therefore it has been
       chosen to exclude this year since it does not provide much additional information.
       There are in total 102 attributes, including various socio-economic data, but only the ones explaining the age, income and educational distribution together with the
       binding attributes area number (rodenr) and year are used in the visualization. We have chosen not to make the unused information available as it disrupts our narrative. <br>
-
+<br>
 			The data set was chosen because all members of the group have a strong relationship to Copenhagen. Therefore, we found it interesting to learn more about our city.
       The data set was chosen since we found it interesting to see the difference in age distribution and educational level compared with the income level in
       the different areas of Copenhagen. We wanted to see if there were any patterns in which areas are the most attractive to live in for people with a high income
@@ -32,8 +31,6 @@
     </p>
 
     <h2>Basic stats</h2>
-    <h3>Choices in data cleaning and preprocessing</h3>
-    Write a short section that discusses the dataset stats, containing key points/plots from your exploratory data analysis.<br><br>
 
     <p>We chose to pre-process the data such that the data needed were easily available and such that the browser load was minimized. For instance, we created aggregated data for all areas of Copenhagen as the sum of the different age groups and the different educational
       levels for the years, which was not available in the original dataset.
@@ -44,10 +41,10 @@
       During the exploratory data analysis we investigatedat the age distribution in areas like Rigshospitalet, where a dorm is located. Therefore we looked at the
       age distribution, educational level and income level for this area which can be seen in following:
     </p>
-
+<center>
     <img src = "ageDistribution.png", width = "400", height = "245"> <img src = "educational.png", width = "400", height = "250">
     <img src = "incomeLevel.png", width = "250", height = "255">
-
+</center>
 
     <p>What can be seen in the age distribution is that there is more than double as many in the highest age group 18-29 than the nearest age group 30-39. When looking at
       the educational level it is clear to see that most of the people in this area are students. This leads to the income level where only few has a high income and the majority has a low income, which is normal during education. <br>
@@ -55,9 +52,6 @@
     </p>
 
     <h2>Genre</h2>
-		<h3>
-    Which tools did you use from each of the 3 categories of Visual Narrative (Figure 7 in Segal and Heer). Why?
-    Which tools did you use from each of the 3 categories of Narrative Structure (Figure 7 in Segal and Heer). Why? </h3><br><br>
 
     <h4>Visual structuring</h4>
       <p>We have chosen to use a consistent visual platform where the overall design is always intact and only the content in different elements is changed.
@@ -88,17 +82,7 @@
         show something about an area but also together. <br>
         A short introduction text have been made so the user is in no doubt what this is about and is also helping with making the user interested. </p>
 
-
-
-Semantically consistent colors:
-Markers of Interactivity:
-
-Details-on-demand:
-
-
     <h2>Visualizations</h2>
-    Explain the visualizations you’ve chosen.
-    Why are they right for the story you want to tell? <br><br>
 
     <p>The map is essential to the visualization since this should show if any areas of Copenhagen is more likely to be inhabited by high, middle or low income people.
 			We have attempted to use semantically consistent colors on our map, meaning that the ordinal nature of income level is reflected in the brightness of the color fill for each area. The same principle is applied in the area chart for educational level.
@@ -109,19 +93,32 @@ Details-on-demand:
     </p>
 
     <h2>Discussion</h2>
-    What went well?,
-    What is still missing? What could be improved?, Why? <br><br>
+
+		<p>
+      We are happy about the details in each plot showing the tooltips. We think this gives the user more information and makes the visualization more interesting.
+      Furthermore it went well with making the close up on the map such that all other elements still updates with the given area. <br><br>
+      We wanted to make an animation taking the user on a tour through the most extreme and interesting areas where it was clear that for example a dorm was located or where
+      many elderly people live. In this way we could really tell a story and show the interesting part of our data without having the user to discover it by themselves. <br>
+      Looking at the stacked area chart no big development is happening through the years. A change from area to area is clear to see and the changing area chart
+      show this. But we hoped a bigger change through the years also could be seen and show a pattern in students for example moving to some areas. But this is not the case.
+    </p>
 
     <h2>Contributions</h2>
-    <p>The map: Nanna and Thor <br>
-      Zooming the map: Thor <br>
-      The histogram: Michelle <br>
-      The stacked area chart: Michelle and Nanna <br>
-      Updates to histogram and stacked area chart: Michelle <br>
-      Explainer page: Michelle <br>
-      Page styling: Nanna <br>
-      Data processing: Thor <br>
-			Button interactivity: Nanna
+
+			<h4>Thor</h4>
+			<p><i>The Manipulator of Perspective: "You only see what I want you to see"</i><br>
+			<b>Main responsibilities:</b> Zooming the map, data processing, map.</p>
+
+			<h4>Michelle</h4>
+			<p><i>The Artist of Visualization: "True beauty lies in the power of D3" </i><br>
+			<b>Main responsibilities: </b>Stacked area chart, histogram and updates to both histogram and stacked area chart, explainer page.</p>
+
+			<h4>Nanna</h4>
+			<p><i>The Map Bender: "Click on the map and your dreams will come true"</i><br>
+			<b>Main responsibilities: </b>Map, stacked area chart, page layout, button interactivity</p>
+
+</p>
+
     </p>
 
 
