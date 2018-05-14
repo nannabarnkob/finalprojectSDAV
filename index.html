@@ -151,14 +151,38 @@
 		// Array for colors
     var color = ['#64848E', '#DADED6', '#B6A693', '#9A9AA1', '#85818D']
 
-		// define tooltip
-		var tip = d3.tip()
+		// define tooltip for histogram
+		var tipHist = d3.tip()
 			.attr('class', 'd3-tip')
 			.offset([-10, 0])
 			.html(function(d) {
 				return "Number of people:" + d3.format(",")(d);
 			});
-			console.log(tip)
+
+		// define tooltip for map
+		var tipMap = d3.tip()
+			.attr('class', 'd3-tip')
+			.offset([-10, 0])
+			.html(function(d) {
+				return "Area: " + d.properties.rodenavn + "<br> High income: " + d.properties.pct_hoj_indkomst + "%" + "<br> Middle income: " + d.properties.pct_middel_indkomst + "% <br> Low income: " + d.properties.pct_lav_indkomst + "%";
+			});
+
+		// define tooltip for area
+		var tipArea = d3.tip()
+			.attr('class', 'd3-tip')
+			.offset([-10, 0])
+			.html(function(d, i) {
+				return education_groups[i];
+			});
+
+		// define tooltip for legend
+		var tipLegend = d3.tip()
+			.attr('class', 'd3-tip')
+			.offset([-10, 0])
+			.html(function(d, i) {
+				return education_explain[i];
+			});
+	
 
     //Create SVG elements for our visualization
     	var svgMap = d3.select("div.viz")
@@ -244,7 +268,7 @@
 		  btns[i].addEventListener("click", function() {
 		    var current = document.getElementsByClassName("active");
 				console.log(current)
-		    current[0].className = current[0].className.replace("active");
+		    current[0].className = current[0].className.replace("active", "");
 		    this.className += " active";
 		  });
 		}
@@ -265,21 +289,29 @@
 						.attr("width", wHist + paddingHist)
 						.attr("height", hHist + paddingHist);
 
-		svgHist.call(tip);
+		svgHist.call(tipHist);
 
 		// Create svg for stacked area chart
 		var svgArea = d3.select("div.viz")
 						.append("svg")
 						.attr("width", wArea + paddingArea)
 						.attr("height", hArea + paddingArea);
+		
+		svgArea.call(tipArea);
+		
 
 		var areaLegend = d3.select("div.viz")
 			.append("svg")
 			.attr("width", wAreaLegend)
 			.attr("height", hAreaLegend);
+
+		areaLegend.call(tipLegend);
+
 		//Create the map to which we append everything ...
 	  	var map = svgMap.append("g")
 	        .attr("id", "map");
+
+		map.call(tipMap);
 
 		//Create a new, invisible background rect to catch zoom events
  		map.append("rect")
@@ -327,7 +359,7 @@
 
 
 			var education_groups = ["antal_gymnasial_udd", "antal_erh_faglig_udd", "antal_kort_viderg_udd", "antal_mellemlang_viderg_udd", "antal_lang_viderg_udd", "antal_ingen_udd", "antal_under_udd"]
-			var education_groups = ["High school", "Vocational", "Short higher education", "Medium higher education", "Long higher education", "During education", "No education"]
+			var education_groups = ["High school", "Vocational", "Short higher education", "Medium higher education", "Long higher education", "No education", "During education"]
 			// source:  https://ufm.dk/uddannelse/anerkendelse-og-dokumentation/dokumentation/termbase
 			 // (Graduate)
 			var education_explain = ["High school in Denmark is a 2-3 year education after public school. It is preparing the students to take a higher education afterwards." ,
@@ -335,8 +367,8 @@
 									"Short higher education demands that the student has completed high school or in some cases a vacational education is enough. They last 2-3 years and entails in most cases a vocational academy degree.",
 									"Medium higher education demands that the student has completed high school or in some cases a vacational education is enough. They last 3-4,5 years.",
 									"Long higher education demands that the student has completed high school. In few cases a vacational education is enough. They last 5-6 year higher and is studied at universities.",
-									"One during education. Can be any of the above mention educations.",
-									"One without an education. Can for example be children which has reached the educational stage yet."];
+									"One without an education. Can for example be children which has reached the educational stage yet.",
+									"One during education. Can be any of the above mention educations."];
 
 		 areaLegend.selectAll("rect")
 		 .data(education_groups)
@@ -354,10 +386,12 @@
 		 .text(function(d) {
 			 return d
 		})
-		.append("title")
-		.text(function(d, i) {
-			return education_explain[i];
-		});
+		.on("mouseover", tipLegend.show)
+		.on("mouseout", tipLegend.hide);
+		//.append("title")
+		//.text(function(d, i) {
+			//return education_explain[i];
+		//});
 
 		 areaLegend.selectAll("text")
 		 	 .data(education_groups)
@@ -411,7 +445,9 @@
 			}
 
 			map.selectAll("path")
-			 .classed("active", centered && function(d) { return d === centered; });
+				.classed("active", centered && function(d) { 
+					return d === centered; 
+				});
 
 			map.transition()
 			 .duration(700)
@@ -570,11 +606,11 @@
 						}
 					}
 				})
-				.on("click",clicked)
-				.append("title")
-				.text(function(d) {
-					return "Area name: " + d.properties.rodenavn
-				});
+				.on("click",clicked);
+				//.append("title")
+				//.text(function(d) {
+				//	return "Area name: " + d.properties.rodenavn
+				//});
 
 				// log how many low- middle high class areas there should be
 				console.log(total_zeros,total_ones,total_twos)
@@ -661,8 +697,8 @@
 							.attr("fill", function(d) {
 							return "rgb(100," + yScaleHist(d)*0.5+30 +", 200)";
 						})
-							.on('mouseover', tip.show)
-							.on('mouseout', tip.hide);
+							.on('mouseover', tipHist.show)
+							.on('mouseout', tipHist.hide);
 							//.append("title") // for tool tip
 							//.text(function(d) {
 						//		return "Number of people: " + d3.format(",")(d);
@@ -777,10 +813,12 @@
 					.attr("fill",function(d,i) {
 						return d3.schemeCategory10[i];
 					})
-					.append("title") // for tool tip
-					.text(function(d, i) {
-						return education_groups[i];
-					});
+					.on('mouseover', tipArea.show)
+					.on('mouseout', tipArea.hide);
+					//.append("title") // for tool tip
+					//.text(function(d, i) {
+					//	return education_groups[i];
+					//});
 					console.log(keys)
 
 					svgArea.append("g")
@@ -825,8 +863,14 @@
 
 			// new selection on map related to updating histogram
 			map.selectAll("path")
-				.on("mouseover", mouseOverHandler)
-				.on("mouseout", mouseOutHandler)
+				.on("mouseover", function(d) { 
+					mouseOverHandler.call(this, d);
+					tipMap.show.call(this,d);
+				})
+				.on("mouseout", function(d) {
+					mouseOutHandler.call(this,d);
+					tipMap.hide.call(this,d);
+				})
 				.on("click", function(d) {
 					console.log(d)
 					all_areas_toggled = false
