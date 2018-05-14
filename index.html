@@ -79,7 +79,6 @@
 				fill: green;
 			}
 
-
 			.d3-tip {
 			  line-height: 1;
 			  font-weight: bold;
@@ -88,9 +87,8 @@
 			  color: #fff;
 			  border-radius: 2px;
 			}
-
-
 	}
+
 	</style>
   <body>
 
@@ -104,7 +102,8 @@
 		<div class="section">
 			<h1> Welcome to Copenhagen. </h1>
 			<p> Here you can move in time and space </p>
-    <div class="viz"> </div>
+		<div class="viz"> 
+		</div>
 
     <script type="text/javascript">
 		$( "#337" ).select(function() {
@@ -113,9 +112,9 @@
 		$( "#337").click(function() {
   	$( "#337" ).select();
 	});
-    	// width and height for map of visualization
-    var wMap = 1000;
-    var hMap = 500;
+	 	// width and height for the visualization
+    	var wMap = 1000;
+    	var hMap = 500;
 		var wHist = 500;
 		var hHist = 400;
 		var wArea = 500;
@@ -130,7 +129,7 @@
 		var centered;
 
 		// define padding
-    var paddingMap = 20;
+    	var paddingMap = 20;
 		var paddingHist = 30;
 		var paddingArea = 20;
 		var paddingText = 5;
@@ -144,7 +143,7 @@
     	return a + b;
 		}
 		// Array for colors
-    var color = ['#64848E', '#DADED6', '#B6A693', '#9A9AA1', '#85818D']
+    	var color = ['#64848E', '#DADED6', '#B6A693', '#9A9AA1', '#85818D']
 
 		// define tooltip for histogram
 		var tipHist = d3.tip()
@@ -178,105 +177,97 @@
 				return "<span style='display:block; width:200px;'>" + education_explain[i] + "</span>";
 			});
 
-
-    //Create SVG elements for our visualization
+    	//Create SVG element for the map
     	var svgMap = d3.select("div.viz")
        		.append("svg")
-  				.attr("width", wMap + paddingMap)
+  			.attr("width", wMap + paddingMap)
        		.attr("height", hMap + paddingMap);
 
-			var mapLegend = d3.select("div.viz")
+		// Create legend for the map
+		var mapLegend = d3.select("div.viz")
 			.append("svg")
 			.attr("width", wMapLegend)
 			.attr("height", hMapLegend);
 
 			function wrap(text, width) {
-	  text.each(function() {
-	    var text = d3.select(this),
-	        words = text.text().split(/\s+/).reverse(),
-	        word,
-	        line = [],
-	        lineNumber = 0,
-	        lineHeight = 1.1, // ems
-	        y = text.attr("y"),
-	        dy = parseFloat(text.attr("dy")),
-	        tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
-	    while (word = words.pop()) {
-	      line.push(word);
-	      tspan.text(line.join(" "));
-	      if (tspan.node().getComputedTextLength() > width) {
-	        line.pop();
-	        tspan.text(line.join(" "));
-	        line = [word];
-	        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-	      }
-	    }
-	  });
-	}
-
+				text.each(function() {
+				var text = d3.select(this),
+				words = text.text().split(/\s+/).reverse(),
+				word,
+				line = [],
+				lineNumber = 0,
+				lineHeight = 1.1, // ems
+				y = text.attr("y"),
+				dy = parseFloat(text.attr("dy")),
+				tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+					while (word = words.pop()) {
+						line.push(word);
+						tspan.text(line.join(" "));
+						if (tspan.node().getComputedTextLength() > width) {
+							line.pop();
+							tspan.text(line.join(" "));
+							line = [word];
+							tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+						}
+					}
+				});
+			}
 
 		// New line
-		d3.select("div.viz")
-		.append("br");
+		d3.select("div.viz").append("br");
 
 		// Create div for buttons
 		d3.select("div.viz")
-		.append("div")
-		.attr("width", wMap)
-		.attr("height", hMap)
-		.attr("align","center")
-		.attr("id","buttons")
-		.attr("class", "buttons");
+			.append("div")
+			.attr("width", wMap)
+			.attr("height", hMap)
+			.attr("align","center")
+			.attr("id","buttons")
+			.attr("class", "buttons");
 
-		d3.select("div#buttons")
+		d3.select("div#buttons") // 2008
 			.append("button")
 			.attr("class", "btn active")
 			.attr("id", "2008")
 			.text("2008");
 
-
-			d3.select("div#buttons")
-				.append("button")
+		d3.select("div#buttons") // 2009
+			.append("button")
 			.attr("class", "btn")
 			.attr("id", "2009")
 			.text("2009");
 
-
-			d3.select("div#buttons")
-				.append("button")
+		d3.select("div#buttons") // 2010
+			.append("button")
 			.attr("class", "btn")
 			.attr("id", "2010")
 			.text("2010");
 
-
-			d3.select("div#buttons")
-				.append("button")
+		d3.select("div#buttons") // 2011
+			.append("button")
 			.attr("class", "btn")
 			.attr("id", "2011")
 			.text("2011");
 
-
-			d3.select("div#buttons")
-				.append("button")
+		d3.select("div#buttons") // 2012
+			.append("button")
 			.attr("class", "btn")
 			.attr("id", "2012")
 			.text("2012");
 
-
-			d3.select("div#buttons")
-				.append("button")
+		d3.select("div#buttons") // 2013
+			.append("button")
 			.attr("class", "btn")
 			.attr("id", "2013")
 			.text("2013");
 
-			d3.select("div#buttons")
-				.append("button")
-				.attr("class", "areabutton")
-				.attr("id", "AllAreas")
-				.text("View all areas");
+		d3.select("div#buttons") // All areas
+			.append("button")
+			.attr("class", "areabutton")
+			.attr("id", "AllAreas")
+			.text("View all areas");
 
-
-
+		// Create svg for the area and year text 
 		var svgText = d3.select("div.viz")
 			.append("svg")
 			.attr("text-align","center")
@@ -284,87 +275,85 @@
 			.attr("height", hText);
 
 		// New line
-		d3.select("div.viz")
-		.append("br");
+		d3.select("div.viz").append("br");
 
 		// Create svg for the histogram
 		var svgHist = d3.select("div.viz")
-						.append("svg")
-						.attr("width", wHist + paddingHist)
-						.attr("height", hHist + paddingHist);
-
-		svgHist.call(tipHist);
+			.append("svg")
+			.attr("width", wHist + paddingHist)
+			.attr("height", hHist + paddingHist)
+			.call(tipHist); // tiptool
 
 		// Create svg for stacked area chart
 		var svgArea = d3.select("div.viz")
-						.append("svg")
-						.attr("width", wArea + paddingArea)
-						.attr("height", hArea + paddingArea);
+			.append("svg")
+			.attr("width", wArea + paddingArea)
+			.attr("height", hArea + paddingArea)
+			.call(tipArea); // tiptool
 
-		svgArea.call(tipArea);
-
-
+		// Create legend for stacked area chart
 		var areaLegend = d3.select("div.viz")
 			.append("svg")
 			.attr("width", wAreaLegend)
-			.attr("height", hAreaLegend);
-
-		areaLegend.call(tipLegend);
+			.attr("height", hAreaLegend)
+			.call(tipLegend); // tiptool
 
 		//Create the map to which we append everything ...
 	  	var map = svgMap.append("g")
-	        .attr("id", "map");
-
-		map.call(tipMap);
+	        .attr("id", "map")
+			.call(tipMap); // tiptool
 
 		//Create a new, invisible background rect to catch zoom events
  		map.append("rect")
           	.attr("x", 0)
-    				.attr("y", 0)
+    		.attr("y", 0)
             .attr("width", wMap)
-    				.attr("height", hMap)
+    		.attr("height", hMap)
             .attr("opacity", 0)
-						.on("click",clicked);
+			.on("click",clicked);
 
 		// Create map legends
 		var map_colors = ["rgb(51, 204, 51)",  "rgb(255, 204, 0)", "rgb(255, 0, 0)", "#d3d3d3" ]
 		var income_groups = ["High income", "Middle income", "Low income", "Missing data"]
 
+		// Define color bars for map legend
 		mapLegend.selectAll("rect")
-		.data(map_colors)
-		.enter()
-		.append("rect")
-		.attr("x", 10)
-		.attr("y", function(d, i) {
-		return 100 + 60*i;
-		})
-		.attr("width", 100)
-		.attr("height", 20)
-		.attr("fill", function(d) {
-			return d;
-		});
+			.data(map_colors)
+			.enter()
+			.append("rect")
+			.attr("x", 10)
+			.attr("y", function(d, i) {
+				return 100 + 60*i;
+			})
+			.attr("width", 100)
+			.attr("height", 20)
+			.attr("fill", function(d) {
+				return d;
+			});
 
+		// Define text for map legend
 		mapLegend.selectAll("text")
-			 .data(income_groups)
-			 .enter()
-			 .append("text")
-			 .text(function(d) {
-					return d;
-			 })
-			 .attr("text-anchor", "middle")
-			 .attr("x", 60)
-			 .attr("y", function(d, i) {
-	 				return 95 + 60*i;
-	 			})
-			 .attr("font-family", "sans-serif")
-			 .attr("font-size", "15px")
-			 .attr("fill", "black");
-
+			.data(income_groups)
+			.enter()
+			.append("text")
+			.text(function(d) {
+				return d;
+			})
+			.attr("text-anchor", "middle")
+			.attr("x", 60)
+			.attr("y", function(d, i) {
+	 			return 95 + 60*i;
+	 		})
+			.attr("font-family", "sans-serif")
+			.attr("font-size", "15px")
+			.attr("fill", "black");
 
 			var education_groups = ["antal_gymnasial_udd", "antal_erh_faglig_udd", "antal_kort_viderg_udd", "antal_mellemlang_viderg_udd", "antal_lang_viderg_udd", "antal_ingen_udd", "antal_under_udd"]
+			// Legend for stacked area chart
 			var education_groups = ["High school", "Vocational education", "Short higher education", "Medium higher education", "Long higher education", "No education", "During education"]
 			// source:  https://ufm.dk/uddannelse/anerkendelse-og-dokumentation/dokumentation/termbase
-			 // (Graduate)
+			// (Graduate)
+			// Extra information in stacked area chart
 			var education_explain = ["High school in Denmark is a 2-3 year education after public school. It is preparing the students to take a higher education afterwards." ,
 									"Vocational training is a common term for educations after public shcool aiming at a particular proffesion. The length of the education can vary between 2 and 5,5 years.",
 									"Short higher education demands that the student has completed high school or in some cases a vacational education is enough. They last 2-3 years and entails in most cases a vocational academy degree.",
@@ -373,61 +362,59 @@
 									"One without an education. Can for example be children which has reached the educational stage yet.",
 									"One during education. Can be any of the above mention educations."];
 
-		 areaLegend.selectAll("rect")
-		 .data(education_groups)
-		 .enter()
-		 .append("rect")
-		 .attr("x", 45)
-		 .attr("y", function(d, i) {
+		// Define color bar for stacked area legend
+		areaLegend.selectAll("rect")
+		.data(education_groups)
+		.enter()
+		.append("rect")
+		.attr("x", 45)
+		.attr("y", function(d, i) {
 		 	return  15 + 60*i;
-		 })
-		 .attr("width", 20)
-		 .attr("height", 20)
-		 .attr("fill", function(d,i) {
+		})
+		.attr("width", 20)
+		.attr("height", 20)
+		.attr("fill", function(d,i) {
 		 	return d3.schemeCategory10[i];
-		 })
-		 .text(function(d) {
+		})
+		.text(function(d) {
 			 return d
 		})
 		.on("mouseover", tipLegend.show)
 		.on("mouseout", tipLegend.hide);
 
+		// Break lines in text when too long
 		var insertLinebreaks = function (d) {
 		    var el = d3.select(this);
 		    var words = d.split(' ');
 		    el.text('');
-
-		    for (var i = 0; i < words.length; i++) {
-		        var tspan = el.append('tspan').text(words[i]);
-		        if (i > 0)
-		            tspan.attr('x', 110).attr('dy', '15');
-		    }
+			for (var i = 0; i < words.length; i++) {
+				var tspan = el.append('tspan').text(words[i]);
+				if (i > 0)
+					tspan.attr('x', 110).attr('dy', '15');
+				}
 		};
-
-
-
-		 areaLegend.selectAll("text")
-		 	 .data(education_groups)
-		 	 .enter()
-		 	 .append("text")
-		 	 .html(function(d) {
-		 			return d;
-		 	 })
-		 	 .attr("text-anchor", "middle")
-		 	 .attr("x", 110)
-		 	 .attr("y", function(d, i) {
-		 			return 25 + 60*i;
-		 		})
-			 .attr("width", 100)
-		 	 .attr("font-family", "sans-serif")
-		 	 .attr("font-size", "15px")
-		 	 .attr("fill", "black");
+		
+		// Define text for stacked area chart
+		areaLegend.selectAll("text")
+		 	.data(education_groups)
+		 	.enter()
+		 	.append("text")
+		 	.html(function(d) {
+		 		return d;
+		 	})
+		 	.attr("text-anchor", "middle")
+			.attr("x", 110)
+		 	.attr("y", function(d, i) {
+		 		return 25 + 60*i;
+		 	})
+			.attr("width", 100)
+		 	.attr("font-family", "sans-serif")
+		 	.attr("font-size", "15px")
+		 	.attr("fill", "black")
+			.each(insertLinebreaks);
 			 //.call(wrap, 100);
 
-			 areaLegend.selectAll('text').each(insertLinebreaks);
 			 /*
-
-
 			 var label = areaLegend.append('foreignObject')
 					 .attr({
 			         height: 50,
@@ -435,12 +422,12 @@
 			         transform: 'translate(0,0)' // put it where you want it...
 			      })
 			      .html('<div class="p"><p>'+d+'</p></div>');
-
 			var labels = label.selectAll("text")
 						 		.data(education_groups)
 						 		.enter()
 								.append("text");
 */
+
 		// define starting year:
 		var paragraphID = "2008" // starting year is actually defined in the creation of the map
 		var selected_name = "All"
@@ -462,14 +449,13 @@
 				if (all_areas_toggled == true) {
 					current[0].className = current[0].className.replace("active", "");
 				}
-					// if map is not active:
+				// if map is not active:
 				else {
 					current[1].className = current[1].className.replace("active", "");
 				}
 				this.className += " active";
 			});
-		}
-
+		};
 
 		function clicked(d,json) {
 			var projection = d3.geoMercator().fitSize([wMap, hMap], json);
@@ -497,13 +483,12 @@
 			map.selectAll("path")
 				.classed("active", centered && function(d) {
 					return d === centered;
-				});
-
-			map.transition()
-			 .duration(700)
-			 .attr("transform", "translate(" + (wMap) / 2 + "," + hMap / 2 + ")scale(" + k + ")translate(" + -x + "," + -y  + ")")
-			 .attr("stroke-width", 1.5 / k + "px");
-		 }
+				})
+				.transition()
+			 	.duration(700)
+			 	.attr("transform", "translate(" + (wMap) / 2 + "," + hMap / 2 + ")scale(" + k + ")translate(" + -x + "," + -y  + ")")
+			 	.attr("stroke-width", 1.5 / k + "px");
+		 		};
 
 		 		 var temp2008 = 0
 		 		 var temp2009 = 0
@@ -536,7 +521,7 @@
 
 					json.features.sort(propSort("rode_nr"))
 
-		 			 console.log(json)
+		 			 //console.log(json)
 		 			 var year2008 = JSON.parse(JSON.stringify(json))
 		 			 var year2009 = JSON.parse(JSON.stringify(json))
 		 			 var year2010 = JSON.parse(JSON.stringify(json))
@@ -599,10 +584,9 @@
 							 year2012.features.splice(k,0,year2011.features[k])
 						 }
 					 }
-					 console.log(wrong_places)
+					 //console.log(wrong_places)
 
-		 			 var selected_year_data;
-
+		 			var selected_year_data;
 
 		 			var projection = d3.geoMercator().fitSize([wMap, hMap], year2008);
 		 			var path = d3.geoPath().projection(projection);
@@ -612,8 +596,8 @@
 			var total_zeros = 0;
 			var total_ones = 0;
 			var total_twos = 0;
-			// draw the map using the json arrays
 
+			// draw the map using the json arrays
 			var choropleth = map.append("g")
 				.attr("id","choropleth")
 				.selectAll("path")
@@ -657,13 +641,9 @@
 					}
 				})
 				.on("click",clicked);
-				//.append("title")
-				//.text(function(d) {
-				//	return "Area name: " + d.properties.rodenavn
-				//});
 
 				// log how many low- middle high class areas there should be
-				console.log(total_zeros,total_ones,total_twos)
+				//console.log(total_zeros,total_ones,total_twos)
 
 				// functions for handling what happens when you hover on the map
 				function mouseOverHandler(d, i) {
@@ -684,11 +664,10 @@
 				.attr("id", "headerHist")
 				.attr("font-size","25px");
 
-
 			d3.csv("Sorted_data.csv",function(data) {
 				var sorted_data = data;
 
-			// Load the aggreagetd age data
+			// Load the aggregated age data
 			d3.csv("Aggregated_data.csv", function(data) {
 				age_data = data;
 				year_observation = []
@@ -706,66 +685,60 @@
 
 			// Define xscale for the histogram
 			var xScaleHist = d3.scaleBand()
-					 			        .domain(d3.range(year_observation.length))
-					 			        .range([paddingHist * 2 + 5, wHist])
-					 			        .paddingInner(0.05);
+				.domain(d3.range(year_observation.length))
+				.range([paddingHist * 2 + 5, wHist])
+				.paddingInner(0.05);
 			// Define yscale for the histogram
 			var yScaleHist = d3.scaleLinear()
-					 			        .domain([0, d3.max(d3.values(year_observation))])
-					 			        .range([hHist, paddingHist + paddingHist/2]);
+				.domain([0, d3.max(d3.values(year_observation))])
+				.range([hHist, paddingHist + paddingHist/2]);
 			// Create labels for the x axis
 			var xLabelHist = d3.scaleBand()
-												.domain(["Age 0-5","Age 6-17","Age 18-29","Age 30-39","Age 40-49","Age 50-64", "Above 64"])
-												.range([paddingHist * 2 , wHist])
-												.paddingInner(0.05);
+				.domain(["Age 0-5","Age 6-17","Age 18-29","Age 30-39","Age 40-49","Age 50-64", "Above 64"])
+				.range([paddingHist * 2 , wHist])
+				.paddingInner(0.05);
 			// Define x axis
 			var xAxisHist = d3.axisBottom()
-												.scale(xLabelHist);
-
-
+				.scale(xLabelHist);
 
 			// Define y axis
 		  	var yAxisHist = d3.axisLeft()
-												.scale(yScaleHist);
+				.scale(yScaleHist);
 
 			// Create bars
 			svgHist.append("g")
-							.selectAll("rect")
-							.data(year_observation)
-							.enter()
-							.append("rect")
-							.attr("class", "histogram")
-							.attr("x", function(d, i) {
-							return xScaleHist(i);
-							})
-							.attr("y", function(d) {
-							return yScaleHist(d) - paddingHist/2;
-							})
-							.attr("width", xScaleHist.bandwidth())
-							.attr("height", function(d, i) {
-							return hHist - yScaleHist(d);
-							})
-							.attr("fill", function(d) {
-							return "rgb(100, " + parseInt(yScaleHist(d)*0.5+30) + ", 200)";
-						})
-							.on('mouseover', tipHist.show)
-							.on('mouseout', tipHist.hide);
-							//.append("title") // for tool tip
-							//.text(function(d) {
-						//		return "Number of people: " + d3.format(",")(d);
-					//		});
+				.selectAll("rect")
+				.data(year_observation)
+				.enter()
+				.append("rect")
+				.attr("class", "histogram")
+				.attr("x", function(d, i) {
+					return xScaleHist(i);
+				})
+				.attr("y", function(d) {
+					return yScaleHist(d) - paddingHist/2;
+				})
+				.attr("width", xScaleHist.bandwidth())
+				.attr("height", function(d, i) {
+					return hHist - yScaleHist(d);
+				})
+				.attr("fill", function(d) {
+					return "rgb(100, " + parseInt(yScaleHist(d)*0.5+30) + ", 200)";
+				})
+				.on('mouseover', tipHist.show)
+				.on('mouseout', tipHist.hide);
 
-			// Make x axis
-			svgHist.append("g")
-						.attr("class","x axis")
-						.attr("transform","translate(0," + (hHist - paddingHist/2) + ")")
-						.call(xAxisHist);
+				// Make x axis
+				svgHist.append("g")
+					.attr("class","x axis")
+					.attr("transform","translate(0," + (hHist - paddingHist/2) + ")")
+					.call(xAxisHist);
 
-			// Create y axis
-			svgHist.append("g")
-						.attr("class","y axis")
-						.attr("transform","translate(" + paddingHist * 2 + "," + -paddingHist/2 + ")")
-						.call(yAxisHist);
+				// Create y axis
+				svgHist.append("g")
+					.attr("class","y axis")
+					.attr("transform","translate(" + paddingHist * 2 + "," + -paddingHist/2 + ")")
+					.call(yAxisHist);
 
 				// Create x axis label
 				svgHist.append("text")
@@ -787,13 +760,13 @@
 
 				// Create header
 				svgHist.append("text")
-                        .attr("transform", "translate(" + (wHist/2 + paddingHist) + "," + paddingHist/2 + ")")
-                        .style("text-anchor", "middle")
-                        .text("Age distribution")
-                        .attr("font-weight", "bold")
-                        .attr("class", "header")
-						.attr("id", "headerHist")
-                        .attr("font-size","25px");
+					.attr("transform", "translate(" + (wHist/2 + paddingHist) + "," + paddingHist/2 + ")")
+					.style("text-anchor", "middle")
+					.text("Age distribution")
+					.attr("font-weight", "bold")
+					.attr("class", "header")
+					.attr("id", "headerHist")
+					.attr("font-size","25px");
 
 					//});
 
@@ -804,26 +777,26 @@
 
 				// load in aggregated education data for "all" option
 			d3.csv("Aggregated_data_udd.csv", function(data) {
-				console.log("original format of area chart data:")
-				console.log(data)
+				//console.log("original format of area chart data:")
+				//console.log(data)
 				education_data = data;
 				var keys_aggregated_data = education_data.columns;
 				// remove the first and last column
 				keys_aggregated_data.shift();
 				keys_aggregated_data.pop();
 				stack.keys(keys_aggregated_data);
-
 				var keys = keys_aggregated_data;
-
 				var series_aggregated_data = stack(education_data);
 				var series = series_aggregated_data;
 
+				// Create x scale
 				var xScaleArea = d3.scaleLinear()
 				.domain([2008, d3.max(education_data, function(d) {
 					return +d.aar;
 				})])
 				.range([paddingArea, wArea-paddingArea*2]);
 
+				// Create y scale
 				var yScaleArea = d3.scaleLinear()
 					.domain([0,d3.max(education_data, function(d) {
 						var sum = 0;
@@ -835,15 +808,18 @@
 					.range([hArea - paddingArea, paddingArea])
 					.nice();
 
+				// Create x axis
 				var xAxisArea = d3.axisBottom()
 					.scale(xScaleArea)
 					.ticks(7)
 					.tickFormat(d3.format(".4"));
 
+				// Create y axis
 				var yAxisArea = d3.axisRight()
 					.scale(yScaleArea)
 					.ticks(5);
 
+				// Create area
 				var area = d3.area()
 					.x(function(d) {
 						return xScaleArea(d.data.aar);
@@ -855,6 +831,7 @@
 						return yScaleArea(d[1]);
 					});
 
+				// Create stacked area chart
 				svgArea.selectAll("path")
 					.data(series)
 					.enter()
@@ -864,19 +841,16 @@
 					.attr("fill",function(d,i) {
 						return d3.schemeCategory10[i];
 					})
-					.on('mouseover', tipArea.show)
+					.on('mouseover', tipArea.show) // tooltip
 					.on('mouseout', tipArea.hide);
-					//.append("title") // for tool tip
-					//.text(function(d, i) {
-					//	return education_groups[i];
-					//});
-					console.log(keys)
 
+					// Define x axis
 					svgArea.append("g")
 						.attr("class", "x axis")
 						.attr("transform", "translate(0," + (hArea - paddingArea) + ")")
 						.call(xAxisArea);
 
+					// Define y axis
 					svgArea.append("g")
 						.attr("class", "y axis")
 						.attr("transform", "translate(" + (wArea - paddingArea * 2) + ", 0)")
@@ -907,10 +881,9 @@
                         .text("Educational level")
                         .attr("font-weight", "bold")
                         .attr("class", "header")
-												.attr("id", "headerHist")
+						.attr("id", "headerHist")
                         .attr("font-size","25px");
 					// area chart done
-
 
 			// new selection on map related to updating histogram
 			map.selectAll("path")
@@ -923,13 +896,13 @@
 					tipMap.hide.call(this,d);
 				})
 				.on("click", function(d) {
-					console.log(d)
+					//console.log(d)
 					all_areas_toggled = false
 					d3.select("#AllAreas").classed("active", false)
 
-					console.log("unselected all areas")
-					// highlight selected area:
+					//console.log("unselected all areas")
 
+					// highlight selected area:
 					var selected_rodenr = d3.select(this).attr("id");
 					var selected_name = d3.select(this).attr("text");
 					// update title according to selected area:
@@ -938,13 +911,13 @@
 					// collect data for histogram
 					var age_distribution_data = [d.properties.alder_antal_0_5, d.properties.alder_antal_6_17, d.properties.alder_antal_18_29, d.properties.alder_antal_30_39, d.properties.alder_antal_40_49,d.properties.alder_antal_50_64, d.properties.alder_antal_over_65]
 
-					console.log(age_distribution_data)
-					console.log(selected_rodenr)
+					//console.log(age_distribution_data)
+					//console.log(selected_rodenr)
 
 					// test for missing data before updating
 					if (age_distribution_data.reduce(add, 0) == 0) {
 						// fill path with white (can be changed)
-						console.log("no age distribution data")
+						//console.log("no age distribution data")
 					}
 					else {
 						update_histogram(age_distribution_data);
@@ -963,7 +936,7 @@
 			// if selected option is all areas, update using the aggregated data and the previously chosen year
  			if (getParagraphID == "AllAreas") {
 				all_areas_toggled = true;
-				console.log("Viewing data for all areas, updating using",last_chosen_year)
+				//console.log("Viewing data for all areas, updating using",last_chosen_year)
 
 				if (all_areas_toggled) {
 						d3.select("#AllAreas").classed("active", true)
@@ -1040,7 +1013,7 @@
 					d3.select("#AllAreas").classed("active", false)
 				}
 
-				console.log("all areas showing:", all_areas_toggled)
+				//console.log("all areas showing:", all_areas_toggled)
 
 				// update using aggregated year data for age distribution
  				paragraphID = last_chosen_year
@@ -1065,16 +1038,16 @@
 			// Case for paragraphID is a year
  			else {
  				paragraphID = getParagraphID
-				console.log("Received year for updating data", paragraphID)
+				//console.log("Received year for updating data", paragraphID)
  				last_chosen_year = paragraphID
-				console.log("All area toggled status: ", all_areas_toggled)
+				//console.log("All area toggled status: ", all_areas_toggled)
 
 				// update the map based on the chosen year
 				update_map(paragraphID)
 
 				// Two cases: either update the histogram based on the active area or all aggregated data
 				if (all_areas_toggled) {
-					console.log("Updating histogram with full data set and year", paragraphID)
+					//console.log("Updating histogram with full data set and year", paragraphID)
 					d3.select("#AllAreas").classed("active", true)
 					selected_name = "All"
 					year_age_observation = [];
@@ -1098,14 +1071,14 @@
 				else {
 					// select data for selected area based on the class 'active' (also determines yellow color)
 					var age_data_selected_area = d3.selectAll(".active").data()
-					console.log("'Raw data' gotten from map:", age_data_selected_area)
+					//console.log("'Raw data' gotten from map:", age_data_selected_area)
 
 					var age_selection = age_data_selected_area[0].properties
 					// find name for updating header
 					selected_name = age_selection.rodenavn
 					var age_distribution_area = [age_selection.alder_antal_0_5, age_selection.alder_antal_6_17, age_selection.alder_antal_18_29, age_selection.alder_antal_30_39, age_selection.alder_antal_40_49,age_selection.alder_antal_50_64, age_selection.alder_antal_over_65]
 
-					console.log("Active data for histogram:", age_distribution_area)
+					//console.log("Active data for histogram:", age_distribution_area)
 					// update header and histogram
 					svgText.select(".header").text("Area: " + selected_name + ", year " + paragraphID)
 					update_histogram(age_distribution_area)
@@ -1117,37 +1090,37 @@
 
  			// Function for updating the map
 			function update_map(paragraphID) {
-				console.log("Updating map")
+				//console.log("Updating map")
 				// Select data set based on paragraph ID
 				if (paragraphID == "2008") {
 					selected_year_data = year2008
-					console.log("selected 2008")
-					console.log(selected_year_data);
+					//console.log("selected 2008")
+					//console.log(selected_year_data);
 				}
 				else if (paragraphID == "2009") {
 					selected_year_data = year2009
-					console.log("selected 2009")
-					console.log(selected_year_data);
+					//console.log("selected 2009")
+					//console.log(selected_year_data);
 				}
 				else if (paragraphID == "2010") {
 					selected_year_data = year2010
-					console.log("selected 2010")
-					console.log(selected_year_data);
+					//console.log("selected 2010")
+					//console.log(selected_year_data);
 				}
 				else if (paragraphID == "2011") {
 					selected_year_data = year2011
-					console.log("selected 2011")
-					console.log(selected_year_data);
+					//console.log("selected 2011")
+					//console.log(selected_year_data);
 				}
 				else if (paragraphID == "2012") {
 					selected_year_data = year2012
-					console.log("selected 2012")
-					console.log(selected_year_data);
+					//console.log("selected 2012")
+					//console.log(selected_year_data);
 				}
 				else if (paragraphID == "2013") {
 					selected_year_data = year2013
-					console.log("selected 2013")
-					console.log(selected_year_data);
+					//console.log("selected 2013")
+					//console.log(selected_year_data);
 				}
 
 				var projection = d3.geoMercator().fitSize([wMap, hMap], selected_year_data);
@@ -1190,7 +1163,7 @@
 
 		// 1. Update data set based on rode_nr
 		var education_data_rodenr = []
-		console.log("Executing update areachart")
+		//console.log("Executing update areachart")
 
 		sorted_data.forEach(d => {
 			if (+d.rode_nr == selected_rodenr) {
@@ -1198,7 +1171,7 @@
 			}
 		})
 
-		console.log("Education data for rodenr: " + selected_rodenr)
+		//console.log("Education data for rodenr: " + selected_rodenr)
 
 		var education_data_subset = education_data_rodenr.map(function(d,i) {
 		  return {
@@ -1213,7 +1186,7 @@
 		  };
 		});
 
-		console.log("Education data for plotting:", education_data_subset)
+		//console.log("Education data for plotting:", education_data_subset)
 		var keys = Object.getOwnPropertyNames(education_data_subset[0]);
 		// remove the first and last column
 		keys.shift();
@@ -1272,7 +1245,7 @@
 
 	// Function for updating the histogram using a simple array for input
 	function update_histogram(age_data_array) {
-		console.log("Updating the histogram with", age_data_array)
+		//console.log("Updating the histogram with", age_data_array)
 
 		// update the y scale
 		yScaleHist.domain([0, d3.max(d3.values(age_data_array))]);
@@ -1296,10 +1269,6 @@
 				.attr("fill", function(d) {
 					return "rgb(100, " + parseInt(yScaleHist(d)*0.5+30) + ", 200)";
 			});
-//				.append("title")
-	//			.text(function(d) {
-		//			return "Number of people: " + d3.format(",")(d);
-			//	});
 
 		// Update y axis
 		svgHist.select(".y.axis")
