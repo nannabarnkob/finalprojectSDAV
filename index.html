@@ -12,8 +12,6 @@
 		  font: 10px sans-serif;
 		}
 
-
-
 			.area {
 				stroke: none;
 			}
@@ -234,7 +232,7 @@
 		  btns[i].addEventListener("click", function() {
 		    var current = document.getElementsByClassName("active");
 				console.log(current)
-		    current[0].className = current[0].className.replace(" active", "");
+		    current[0].className = current[0].className.replace("active");
 		    this.className += " active";
 		  });
 		}
@@ -317,9 +315,16 @@
 
 
 			var education_groups = ["antal_gymnasial_udd", "antal_erh_faglig_udd", "antal_kort_viderg_udd", "antal_mellemlang_viderg_udd", "antal_lang_viderg_udd", "antal_ingen_udd", "antal_under_udd"]
-			var education_groups = ["High school", "Vocational", "Short-cycle higher education", "Medium-cycle higher education", "Long cycle higher education", "No education", "Students"]
+			var education_groups = ["High school", "Vocational", "Short higher education", "Medium higher education", "Long higher education", "During education", "No education"]
 			// source:  https://ufm.dk/uddannelse/anerkendelse-og-dokumentation/dokumentation/termbase
 			 // (Graduate)
+			var education_explain = ["High school in Denmark is a 2-3 year education after public school. It is preparing the students to take a higher education afterwards." , 
+									"Vocational training is a common term for educations after public shcool aiming at a particular proffesion. The length of the education can vary between 2 and 5,5 years.", 
+									"Short higher education demands that the student has completed high school or in some cases a vacational education is enough. They last 2-3 years and entails in most cases a vocational academy degree.",
+									"Medium higher education demands that the student has completed high school or in some cases a vacational education is enough. They last 3-4,5 years.",
+									"Long higher education demands that the student has completed high school. In few cases a vacational education is enough. They last 5-6 year higher and is studied at universities.",
+									"One during education. Can be any of the above mention educations.",
+									"One without an education. Can for example be children which has reached the educational stage yet."];
 
 		 areaLegend.selectAll("rect")
 		 .data(education_groups)
@@ -334,7 +339,13 @@
 		 .attr("fill", function(d,i) {
 		 	return d3.schemeCategory10[i];
 		 })
-		 .text(function(d) {return d});
+		 .text(function(d) {
+			 return d
+		})
+		.append("title")
+		.text(function(d, i) {
+			return education_explain[i];
+		});
 
 		 areaLegend.selectAll("text")
 		 	 .data(education_groups)
@@ -758,9 +769,9 @@
 						return d3.schemeCategory10[i];
 					})
 					.append("title") // for tool tip
-					.text(function(d) {
-						return d.key;
-					})
+					.text(function(d, i) {
+						return education_groups[i];
+					});
 					console.log(keys)
 
 					svgArea.append("g")
